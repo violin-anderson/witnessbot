@@ -252,7 +252,7 @@ class Board():
             else:
                 ret.append((on.pixel[0]+20, on.pixel[1]))
         else:
-            ret.append((on.pixel[0], on.pixel[1]-40))
+            ret.append((on.pixel[0], on.pixel[1]-50))
         
 # =============================================================================
 #         i = 1

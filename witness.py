@@ -1,24 +1,40 @@
 #!/usr/bin/env python3
 
-import pyautogui, time, math
+import time, math, os, mss
+import pydirectinput as guilib
 import read, data
 import numpy as np
 import cv2 as cv
 from skimage import transform
 from matplotlib import pyplot as plt
 
-REGION = (1680, 0, 1920, 1080) #Game window region
-FOURREGION = (460, 585, 770, 350)
-SENS = 1.92
-#SENS3D = 0.575
-SENS3D = 0.677
+#REGION = (1680, 0, 1920, 1080) #Game window region
+REGION = (0, 0, 1920, 1080) #Game window region
+FOURREGION = (600, 400, 700, 350)
+SENS = (1, 1)
+SENS3D = (1, 1)
 FOV = 100 * math.pi / 180
+MONITOR = 1
 
 DEBUG = 0
 
+sct = mss.mss()
+
+# Override pydirectinput's method to allow for inputting floats
+def f(x=0, y=0):
+    display_width, display_height = guilib.size()
+    
+    windows_x = int((x * 65536) // display_width) + 1
+    windows_y = int((y * 65536) // display_height) + 1
+    
+    return windows_x, windows_y
+
+guilib._to_windows_coordinates = f
+guilib.PAUSE = 0.02
+
 class WitnessGUI:
     def __init__(self, walking = True):
-        self.CENTER = (REGION[2]//2, REGION[3]//2)
+        self.CENTER = (sct.monitors[MONITOR]["width"]//2, sct.monitors[MONITOR]["height"]//2)
         self.mousecoords = self.CENTER
         self.clicked = False
         self.clickedsens = 1
@@ -26,14 +42,14 @@ class WitnessGUI:
         self.nexttime = 0
     
     def startstop_solve(self):
-        pyautogui.press("space")
+        guilib.press("space")
         self.walking = not self.walking
         if not self.walking:
             self.mousecoords = self.CENTER
     
     def click(self):
         assert(not self.walking)
-        pyautogui.click(0, 0)
+        guilib.click(None, None)
         self.clicked = not self.clicked
     
     def moveBy(self, x, y):
@@ -42,22 +58,19 @@ class WitnessGUI:
         else:
             sens = SENS
             if self.clicked:
-                sens *= self.clickedsens
+                sens = (sens[0] * self.clickedsens, sens[1] * self.clickedsens)
         
+        adjx = x * sens[0]
+        adjx = adjx if adjx else 0.001
+        adjy = y * sens[1]
+        adjy = adjy if adjy else 0.001
         # I don't know why this works, but it does
-        pyautogui.moveTo(x * sens, y * sens)
+        guilib.moveTo(adjx, adjy)
         self.mousecoords = (self.mousecoords[0] + x, self.mousecoords[1] + y)
     
     def moveTo(self, x, y):
         if self.walking:
             self.moveBy(x-self.CENTER[0], y-self.CENTER[1])
-            # These formulas aren't right but I can't figure out the right ones
-            # Account for perspective warp at edges of screen
-            #c = math.tan(FOV/2)/(REGION[3]/2)
-            #x = math.atan((x-self.CENTER[0])*c)/FOV*REGION[3]
-            # Same formula applies to y, assuming xFOV and yFOV are proportional to pixels
-            #y = math.atan((y-self.CENTER[1])*c)/FOV*REGION[3]
-            #self.moveBy(x, y)
         else:
             self.moveBy(x-self.mousecoords[0], y-self.mousecoords[1])
             self.mousecoords = (x, y)
@@ -72,8 +85,11 @@ class WitnessGUI:
         else:
             print(f"WARN: time exceeded by {-1*t}")
 
-def get_screenshot(region=REGION):
-    return cv.cvtColor(np.array(pyautogui.screenshot(region=region)), cv.COLOR_RGB2BGR)
+def get_screenshot(region=None):
+    arr = np.array(sct.grab(sct.monitors[MONITOR]))[:,:,:3]
+    if region:
+        return arr[region[1]:region[1]+region[3], region[0]:region[0]+region[2]]
+    return arr
 
 def solveBoard(boardData, gui, i=""):
     image = get_screenshot()
@@ -105,20 +121,20 @@ def solveBoard(boardData, gui, i=""):
         gui.moveTo(*c)
     gui.click()
 
-tlimg4 = cv.imread('images/fourtl.png')
-trimg4 = cv.imread('images/fourtr.png')
-blimg4 = cv.imread('images/fourbl.png')
-brimg4 = cv.imread('images/fourbr.png')
-
 def warpBoard4(image):
-    #tl = np.array(findimage(tlimg4, np.copy(image))) + np.array([30, 20])
-    tl = np.array([290, 35])
-    #bl = np.array(findimage(blimg4, np.copy(image))) + np.array([20, 35])
-    bl = tl + np.array([-180, 255])
-    #tr = np.array(findimage(trimg4, np.copy(image))) + np.array([30, 15])
-    tr = tl + np.array([330, 5])
-    #br = np.array(findimage(brimg4, np.copy(image))) + np.array([50, 40])
-    br = tl + np.array([390, 275])
+    flooded = (image[:,:,2] > 105) & (image[:,:,2] < 115) & (image[:,:,1] > 80) & (image[:,:,1] < 85)
+    if DEBUG:
+        plt.imshow(flooded)
+        plt.show()
+    locs = np.argwhere(flooded)[:,::-1]
+    
+    summed = locs[:,0] + locs[:,1]*2
+    tl = locs[np.argmin(summed)] + np.array([0, -5])
+    br = locs[np.argmax(summed)] + np.array([0, 10])
+    summed = locs[:,0]*2 - locs[:,1]
+    bl = locs[np.argmin(summed)] + np.array([-18, 5])
+    tr = locs[np.argmax(summed)] + np.array([5, -7])
+    print(tl)
     
     src = np.array([tr, br, tl, bl])
     dest = np.array([[0, 0], [350, 0], [0, 275], [350, 275]])
@@ -133,11 +149,11 @@ def warpBoard4(image):
     return image, warpfn
 
 def solveBoard4(gui):
-    image = get_screenshot((REGION[0]+FOURREGION[0], REGION[1]+FOURREGION[1],
-                            FOURREGION[2], FOURREGION[3]))
-    cv.imwrite(f"four.png", image)
+    image = get_screenshot(FOURREGION)
+    cv.imwrite("four.png", image)
     image, warpfn = warpBoard4(image)
     
+    gui.startstop_solve()
     b = read.readBoard(image, data.FOUR)
     
     if not b.solve():
@@ -157,11 +173,24 @@ def solveBoard4(gui):
 def waitForPuzzle(x, y, x2, y2):
     loaded = False
     while not loaded:
-        image = get_screenshot((REGION[0]+x, REGION[1]+y, x2-x, y2-y))
+        image = get_screenshot((x, y, x2-x, y2-y))
         blue = np.average(image[:,:,0])
         green = np.average(image[:,:,1])
         red = np.average(image[:,:,2])
         loaded = red < 60 and green > 90 and blue < green * 0.85 and blue > green * 0.5
+
+def detectPuzzle(x, y, x2, y2):
+    image = get_screenshot()
+    if DEBUG >= 2:
+        plt.imshow(image)
+        plt.show()
+    
+    image = image[y:y2,x:x2]
+    if DEBUG >= 1:
+        plt.imshow(image)
+        plt.show()
+    
+    return np.any(image[:,:,1] > 190)
 
 def findimage(template, image=None):
     if image is None:
@@ -175,25 +204,270 @@ def findimage(template, image=None):
         plt.show()
     return maxloc
 
+def calibrate(gui):
+    global SENS3D, SENS
+    SENS3D = (1, 1)
+    SENS = (1, 1)
+    
+    if os.path.exists("sensitivity.txt"):
+        f = open("sensitivity.txt", 'r')
+        s = f.readline().split(' ')
+        SENS3D = (float(s[0]), float(s[1]))
+        s = f.readline().split(' ')
+        SENS = (float(s[0]), float(s[1]))
+        f.close()
+        return
+    
+    music = cv.imread('images/record.png')
+    maxloc = findimage(music)
+    
+    gui.moveBy(2, 2)
+    maxloc2 = findimage(music)
+    SENS3D = (2 / (maxloc[0] - maxloc2[0]), 2 / (maxloc[1] - maxloc2[1]))
+    
+    print(SENS3D)
+    if SENS3D[0] < 0 or SENS3D[1] < 0:
+        raise Exception("Error while calibrating sensitivity. Please turn down in-game sensitivity or calibrate manually")
+        
+    gui.moveTo(maxloc2[0] - 1200, maxloc2[1] - 400)
+    gui.startstop_solve()
+    time.sleep(1)
+    
+    cursor = cv.imread('images/cursor.png')
+    maxloc = findimage(cursor)
+    gui.moveBy(2, 2)
+    maxloc2 = findimage(cursor)
+    SENS = (2 / (maxloc2[0] - maxloc[0]), 2 / (maxloc2[1] - maxloc[1]))
+    
+    print(SENS)
+    if SENS[0] < 0 or SENS[1] < 0:
+        raise Exception("Error while calibrating sensitivity. Please turn down in-game sensitivity or calibrate manually")
+    
+    gui.startstop_solve()
+    gui.moveBy(1200, 400)
+    
+    f = open("sensitivity.txt", 'w')
+    f.write(f"{SENS3D[0]} {SENS3D[1]}\n{SENS[0]} {SENS[1]}")
+    f.close()
+
+        #cv.imwrite('fssenav2.png', get_screenshot())
+def navigateFSSE(current, solved, gui):
+    if current == 'start':
+        gui.moveBy(1900, -300)
+        guilib.keyDown('w')
+        time.sleep(2)
+        guilib.keyDown('a')
+        guilib.keyUp('w')
+        gui.schedule(0.4)
+        front = detectPuzzle(600, 0, 1000, 200)
+        gui.execute()
+        
+        if front:
+            time.sleep(0.6)
+            gui.moveBy(700, 0)
+            guilib.keyUp('a')
+            guilib.keyDown('w')
+            time.sleep(1)
+            guilib.keyUp('w')
+            gui.startstop_solve()
+            return 'front'
+        
+        guilib.keyUp('a')
+        guilib.keyDown('d')
+        gui.schedule(0.3)
+        under = detectPuzzle(1000, 450, 1300, 650)
+        gui.execute()
+        
+        if under:
+            guilib.keyUp('d')
+            gui.moveBy(-200, 0)
+            guilib.keyDown('w')
+            time.sleep(1)
+            gui.moveBy(1400, 0)
+            guilib.keyUp('w')
+            gui.startstop_solve()
+            return 'under'
+        
+        gui.moveBy(-300, 0)
+        time.sleep(0.3)
+        gui.moveBy(-500, 0)
+        time.sleep(0.3)
+        guilib.keyUp('d')
+        gui.schedule(0.15)
+        back = detectPuzzle(1100, 200, 1200, 400)
+        gui.execute()
+        
+        if back:
+            gui.moveBy(500, 0)
+            guilib.keyDown('w')
+            time.sleep(0.6)
+            guilib.keyUp('w')
+            gui.moveBy(-1400, 0)
+            gui.startstop_solve()
+            return 'back'
+        
+        guilib.keyDown('a')
+        time.sleep(0.7)
+        gui.moveBy(500, 0)
+        guilib.keyUp('a')
+        guilib.keyDown('w')
+        time.sleep(1.5)
+        gui.moveBy(800, 0)
+        time.sleep(0.4)
+        gui.moveBy(1500, 0)
+        time.sleep(0.2)
+        guilib.keyUp('w')
+        gui.startstop_solve()
+        return 'behind'
+    
+    ###########################################################################
+    if current == 'front':
+        if solved['behind'] and solved['under']:
+            guilib.keyDown('a')
+            time.sleep(0.7)
+            guilib.keyDown('w')
+            time.sleep(0.3)
+            guilib.keyUp('a')
+            time.sleep(0.3)
+            gui.moveBy(1300, 0)
+            time.sleep(0.6)
+            gui.moveBy(1200, 0)
+            gui.startstop_solve()
+            guilib.keyUp('w')
+            return 'back'
+            
+        guilib.keyDown('s')
+        time.sleep(0.9)
+        guilib.keyUp('s')
+        guilib.keyDown('a')
+        time.sleep(0.7)
+        guilib.keyUp('a')
+        guilib.keyDown('w')
+        gui.schedule(0.65)
+        under = not solved['under'] and detectPuzzle(1400, 500, 1650, 600)
+        gui.execute()
+        
+        if under:
+            guilib.keyDown('d')
+            guilib.keyUp('w')
+            time.sleep(0.5)
+            gui.startstop_solve()
+            guilib.keyUp('d')
+            return 'under'
+        
+        if not solved['behind']:
+            time.sleep(0.35)
+            guilib.keyUp('w')
+            gui.moveBy(1200, 0)
+            gui.schedule(0.1)
+            behind = detectPuzzle(600, 400, 900, 700)
+            behind = True
+            gui.execute()
+            
+            if behind:
+                guilib.keyDown('w')
+                time.sleep(0.3)
+                guilib.keyUp('w')
+                gui.startstop_solve()
+                return 'behind'
+        
+            guilib.keyDown('d')
+            guilib.keyDown('s')
+            time.sleep(0.3)
+            guilib.keyUp('s')
+            time.sleep(0.25)
+            guilib.keyUp('d')
+            gui.moveBy(150, 0)
+            guilib.keyDown('w')
+        else:
+            gui.moveBy(1200, 0)
+        
+        time.sleep(1.4)
+        gui.moveBy(-1400, 0)
+        time.sleep(0.6)
+        gui.moveBy(-1400, 0)
+        time.sleep(0.4)
+        guilib.keyUp('w')
+        gui.moveBy(-1400, 0)
+        gui.startstop_solve()
+        return 'back'
+    
+    ###########################################################################
+    if current == 'back':
+        guilib.keyDown('a')
+        time.sleep(1)
+        gui.moveBy(1600, -200)
+        time.sleep(0.5)
+        gui.schedule(0.2)
+        front = not solved['front'] and detectPuzzle(900, 50, 1150, 200)
+        gui.execute()
+        
+        if front:
+            guilib.keyDown('s')
+            guilib.keyUp('a')
+            time.sleep(0.2)
+            guilib.keyDown('a')
+            guilib.keyUp('s')
+            time.sleep(0.5)
+            gui.moveBy(800, 0)
+            guilib.keyDown('w')
+            time.sleep(0.3)
+            guilib.keyUp('a')
+            time.sleep(0.6)
+            guilib.keyUp('w')
+            gui.startstop_solve()
+            return 'front'
+        
+        guilib.keyUp('a')
+        guilib.keyDown('w')
+        gui.schedule(0.6)
+        under = not solved['under'] and detectPuzzle(1100, 650, 1500, 900)
+        gui.execute()
+        
+        if under:
+            gui.moveBy(1400, 200)
+            guilib.keyUp('w')
+            gui.startstop_solve()
+            return 'under'
+        
+        time.sleep(0.8)
+        gui.moveBy(1100, 200)
+        time.sleep(0.4)
+        gui.moveBy(1400, 0)
+        time.sleep(0.3)
+        guilib.keyUp('w')
+        gui.startstop_solve()
+        return 'behind'
+        
+    ###########################################################################
+    if current == 'under':
+        raise Exception("NYI")
+        
+    if current == 'behind':
+        raise Exception("NYI")
+
 def main():
     escape = cv.imread('images/escape.png')
     music = cv.imread('images/record.png')
     music2 = cv.imread('images/recordc.png')
     
     time.sleep(3)
-    pyautogui.PAUSE = 0.02
     
     # Look for the escape screen
     ready = False
     while not ready:
         image = get_screenshot()
         res = cv.matchTemplate(image, escape, cv.TM_SQDIFF_NORMED)
+        print(np.min(res))
         if np.min(res) < 0.01:
             ready = True
-    pyautogui.press("escape")
+    guilib.press("escape")
     time.sleep(0.5)
     
     gui = WitnessGUI(True)
+    guilib.keyUp('shift')
+    guilib.keyDown('shift')
+    calibrate(gui)
     
     while True:
         # Look for the music box
@@ -201,11 +475,9 @@ def main():
         gui.moveTo(maxloc[0] - 100, maxloc[1] + 300)
         
         # Walk to the music box
-        pyautogui.keyUp('shift')
-        pyautogui.keyDown('shift')
-        pyautogui.keyDown('w')
+        guilib.keyDown('w')
         time.sleep(1)
-        pyautogui.keyUp('w')
+        guilib.keyUp('w')
         
         # Solve the music box
         gui.startstop_solve()
@@ -222,9 +494,9 @@ def main():
         
         # Walk to puzzle one
         gui.moveBy(-80, -200)
-        pyautogui.keyDown('w')
+        guilib.keyDown('w')
         time.sleep(2.1)
-        pyautogui.keyUp('w')
+        guilib.keyUp('w')
         
         gui.startstop_solve()
         
@@ -234,88 +506,44 @@ def main():
         gui = WitnessGUI(False)
         solveBoard(data.ONE, gui)
         
-        pyautogui.press('d')
+        guilib.press('d')
         time.sleep(0.4)
         
         solveBoard(data.TWO, gui)
         
-        pyautogui.press('d')
+        guilib.press('d')
         time.sleep(0.4)
         
         solveBoard(data.THREE, gui)
         gui.startstop_solve()
         
         # Go to 4
-        pyautogui.keyDown('d')
+        guilib.keyDown('d')
         time.sleep(0.1)
-        pyautogui.keyDown('w')
+        guilib.keyDown('w')
         time.sleep(0.7)
-        pyautogui.keyUp('d')
-        time.sleep(0.71)
-        pyautogui.keyUp('w')
-        
-        gui.moveBy(-1000, 180)
-        gui.startstop_solve()
+        guilib.keyUp('d')
+        time.sleep(0.68)
+        guilib.keyUp('w')
+        gui.moveBy(-1250, 250)
         
         time.sleep(0.5)
-        #pyautogui.PAUSE = 1
         solveBoard4(gui)
         gui.startstop_solve()
         
-        # Go to FSSE
-        pyautogui.PAUSE = 0
-        gui.moveBy(1600, -200)
-        pyautogui.keyDown('w')
-        time.sleep(0.3)
-        gui.moveBy(200, 0)
-        time.sleep(0.3)
-        gui.moveBy(-100, 0)
+        # Go through FSSE
+        current = 'start'
+        solved = {'front': False, 'back': False, 'under': False, 'behind': False}
         
-        time.sleep(0.8)
-        gui.schedule(0.4)
-        image1 = np.array(pyautogui.screenshot(region=REGION))
-        gui.execute()
-        pyautogui.keyDown('a')
-        pyautogui.keyUp('w')
-        gui.moveBy(50, 0)
+        for i in range(4):
+            current = navigateFSSE(current, solved, gui)
+            time.sleep(0.8)
+            solveBoard(data.FSSE, gui, i)
+            gui.startstop_solve()
+            solved[current] = True
         
-        gui.schedule(0.2)
-        gui.execute()
-        pyautogui.keyUp('a')
-        pyautogui.keyDown('d')
-        gui.schedule(0.5)
-        image2 = np.array(pyautogui.screenshot(region=REGION))
-        gui.execute()
-        pyautogui.keyUp('d')
-        
-        cv.imwrite('trans1.png', image1)
-        cv.imwrite('trans2.png', image2)
-        
-        pyautogui.keyUp('shift')
+        guilib.keyUp('shift')
         raise Exception('NYI')
-        
-        # Go back to the start from 3
-        gui.moveBy(-2150, 0)
-        pyautogui.keyDown('w')
-        time.sleep(3.5)
-        pyautogui.keyUp('w')
-        gui.moveBy(-2500, -50)
-        
-        pyautogui.press('escape')
-        time.sleep(0.1)
-        pyautogui.press('escape')
-    
-    #read.DEBUG = 2
-    #pyautogui.PAUSE = 0.5
-    #time.sleep(20)
-    
-    for i in range(4):
-        waitForPuzzle(775, 375, 1140, 730)
-        time.sleep(0.5)
-        
-        gui = WitnessGUI(False)
-        solveBoard(data.FSSE, gui, i)
-        time.sleep(3)
 
 if __name__ == "__main__":
     main()

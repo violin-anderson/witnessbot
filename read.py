@@ -82,7 +82,7 @@ def clean_hexes(image, boardData):
     locs = []
     res = cv.matchTemplate(image, template, cv.TM_CCOEFF_NORMED)
     _, max_val, _, max_loc = cv.minMaxLoc(res)
-    while max_val > 0.9:
+    while max_val > 0.8:
         locs.append((max_loc[1]+7, max_loc[0]+7))
         
         if DEBUG >= 3:
@@ -114,9 +114,9 @@ def get_blocks(vert_centers, horiz_centers, linemap):
                 dn = 2 # Something special to help out two
             if np.sum(linemap[transy-BDN-dn:transy+BDN+dn, centerx-BDJ:centerx+BDJ]) < (BDN+dn)*BDJ*4*BLOCKTHRESHOLD:
                 elts.append(elements.Block(x, y, x+1, y))
-                if DEBUG >= 2:
+                if DEBUG >= 1:
                     linemap[transy-BDN-dn:transy+BDN+dn, centerx-BDJ:centerx+BDJ] += 0.5
-            elif DEBUG >= 2:
+            elif DEBUG >= 1:
                 linemap[transy-BDN-dn:transy+BDN+dn, centerx-BDJ:centerx+BDJ] -= 0.5
     
     for x in range(vert_centers.shape[0]):
@@ -128,12 +128,12 @@ def get_blocks(vert_centers, horiz_centers, linemap):
                 dn = 2 # Something special to help out two
             if np.sum(linemap[centery-BDJ:centery+BDJ, transx-BDN-dn:transx+BDN+dn]) < (BDN+dn)*BDJ*4*BLOCKTHRESHOLD:
                 elts.append(elements.Block(x, y, x, y+1))
-                if DEBUG >= 2:
+                if DEBUG >= 1:
                     linemap[centery-BDJ:centery+BDJ, transx-BDN-dn:transx+BDN+dn] += 0.5
-            elif DEBUG >= 2:
+            elif DEBUG >= 1:
                 linemap[centery-BDJ:centery+BDJ, transx-BDN-dn:transx+BDN+dn] -= 0.5
     
-    if DEBUG >= 2:
+    if DEBUG >= 1:
         plt.imshow(linemap, cmap='gray')
         plt.show()
     return elts
@@ -154,7 +154,7 @@ def add_edgeHexes(elts, vert_centers, horiz_centers, hexes):
     horiz_centers = np.array(horiz_centers)
     for y, x in hexes:
         diff = np.abs(horiz_centers-y)
-        if np.min(diff) < 3:
+        if np.min(diff) < 6:
             iy = np.argmin(diff)
             ix = np.sum((vert_centers - x) < 0)
             
@@ -167,7 +167,7 @@ def add_edgeHexes(elts, vert_centers, horiz_centers, hexes):
             
         else:
             diff = np.abs(vert_centers-x)
-            assert(np.min(diff) < 3)
+            assert(np.min(diff) < 6)
             ix = np.argmin(diff)
             iy = np.sum((horiz_centers - y) < 0)
             
@@ -257,7 +257,7 @@ def get_cell_objects(vert_centers, horiz_centers, frame, boardData):
             tolerance = 12
             if boardData.squares:
                 tolerance = 25
-            for start in [(10, 10), (-10, 10), (10, -10), (-10, -10)]:
+            for start in [(10, 10), (important.shape[0]-10, 10), (10, important.shape[1]-10), (important.shape[0]-10, important.shape[1]-10)]:
                 important = segmentation.flood_fill(important, start, 255, tolerance=tolerance)
             
             if DEBUG >= 2:
