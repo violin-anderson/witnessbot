@@ -132,9 +132,8 @@ def warpBoard4(image):
     tl = locs[np.argmin(summed)] + np.array([0, -5])
     br = locs[np.argmax(summed)] + np.array([0, 10])
     summed = locs[:,0]*2 - locs[:,1]
-    bl = locs[np.argmin(summed)] + np.array([-18, 5])
+    bl = locs[np.argmin(summed)] + np.array([-23, 5])
     tr = locs[np.argmax(summed)] + np.array([5, -7])
-    print(tl)
     
     src = np.array([tr, br, tl, bl])
     dest = np.array([[0, 0], [350, 0], [0, 275], [350, 275]])
@@ -179,9 +178,10 @@ def waitForPuzzle(x, y, x2, y2):
         red = np.average(image[:,:,2])
         loaded = red < 60 and green > 90 and blue < green * 0.85 and blue > green * 0.5
 
+storage = []##################################################
 def detectPuzzle(x, y, x2, y2):
     image = get_screenshot()
-    if DEBUG >= 2:
+    if DEBUG == 2:
         plt.imshow(image)
         plt.show()
     
@@ -189,8 +189,13 @@ def detectPuzzle(x, y, x2, y2):
     if DEBUG >= 1:
         plt.imshow(image)
         plt.show()
-    
-    return np.any(image[:,:,1] > 190)
+    storage.append(image)#####################################
+    image = (image[:,:,1] > 140) & (image[:,:,2] < 90)
+    if DEBUG == 3:
+        plt.imshow(image)
+        plt.show()
+    storage.append(image)#####################################
+    return np.any(image)
 
 def findimage(template, image=None):
     if image is None:
@@ -250,7 +255,6 @@ def calibrate(gui):
     f.write(f"{SENS3D[0]} {SENS3D[1]}\n{SENS[0]} {SENS[1]}")
     f.close()
 
-        #cv.imwrite('fssenav2.png', get_screenshot())
 def navigateFSSE(current, solved, gui):
     if current == 'start':
         gui.moveBy(1900, -300)
@@ -291,10 +295,10 @@ def navigateFSSE(current, solved, gui):
         gui.moveBy(-300, 0)
         time.sleep(0.3)
         gui.moveBy(-500, 0)
-        time.sleep(0.3)
+        time.sleep(0.4)
         guilib.keyUp('d')
         gui.schedule(0.15)
-        back = detectPuzzle(1100, 200, 1200, 400)
+        back = detectPuzzle(1000, 200, 1200, 500)
         gui.execute()
         
         if back:
@@ -307,7 +311,7 @@ def navigateFSSE(current, solved, gui):
             return 'back'
         
         guilib.keyDown('a')
-        time.sleep(0.7)
+        time.sleep(0.8)
         gui.moveBy(500, 0)
         guilib.keyUp('a')
         guilib.keyDown('w')
@@ -361,7 +365,6 @@ def navigateFSSE(current, solved, gui):
             gui.moveBy(1200, 0)
             gui.schedule(0.1)
             behind = detectPuzzle(600, 400, 900, 700)
-            behind = True
             gui.execute()
             
             if behind:
@@ -390,6 +393,7 @@ def navigateFSSE(current, solved, gui):
         guilib.keyUp('w')
         gui.moveBy(-1400, 0)
         gui.startstop_solve()
+        assert(not solved['back'])
         return 'back'
     
     ###########################################################################
@@ -437,14 +441,125 @@ def navigateFSSE(current, solved, gui):
         time.sleep(0.3)
         guilib.keyUp('w')
         gui.startstop_solve()
+        assert(not solved['behind'])
         return 'behind'
         
     ###########################################################################
-    if current == 'under':
-        raise Exception("NYI")
-        
     if current == 'behind':
-        raise Exception("NYI")
+        guilib.keyDown('s')
+        time.sleep(0.4)
+        guilib.keyUp('s')
+        guilib.keyDown('d')
+        time.sleep(0.6)
+        gui.schedule(0.1)
+        under = not solved['under'] and detectPuzzle(500, 300, 1000, 600)
+        gui.execute()
+        
+        if under:
+            guilib.keyUp('d')
+            guilib.keyDown('w')
+            gui.moveBy(-300, 0)
+            time.sleep(0.5)
+            gui.moveBy(-1200, 0)
+            gui.startstop_solve()
+            guilib.keyUp('w')
+            return 'under'
+        
+        time.sleep(0.4)
+        guilib.keyUp('d')
+        guilib.keyDown('w')
+        time.sleep(0.5)
+        gui.moveBy(-1300, -200)
+        gui.schedule(0.1)
+        front = not solved['front'] and detectPuzzle(1000, 300, 1500, 500)
+        gui.execute()
+        
+        if front:
+            gui.moveBy(300, 200)
+            time.sleep(0.3)
+            guilib.keyUp('w')
+            gui.startstop_solve()
+            return 'front'
+        
+        time.sleep(0.3)
+        guilib.keyDown('a')
+        time.sleep(0.6)
+        guilib.keyUp('a')
+        gui.moveBy(400, 200)
+        time.sleep(0.2)
+        gui.moveBy(1000, 0)
+        time.sleep(0.5)
+        gui.moveBy(1400, 0)
+        gui.startstop_solve()
+        guilib.keyUp('w')
+        assert(not solved['back'])
+        return 'back'
+    
+    ###########################################################################
+    if current == 'under':
+        guilib.keyDown('s')
+        time.sleep(0.3)
+        guilib.keyUp('s')
+        guilib.keyDown('a')
+        time.sleep(0.5)
+        
+        if not solved['behind']:
+            time.sleep(0.2)
+            guilib.keyUp('a')
+            guilib.keyDown('w')
+            time.sleep(0.2)
+            guilib.keyUp('w')
+            gui.moveBy(1000, 0)
+            gui.schedule(0.1)
+            behind = detectPuzzle(500, 450, 1000, 750)
+            gui.execute()
+            
+            if behind:
+                guilib.keyDown('w')
+                time.sleep(0.2)
+                guilib.keyUp('w')
+                gui.startstop_solve()
+                return 'behind'
+            
+            gui.moveBy(-1000, 0)
+            guilib.keyDown('s')
+            time.sleep(0.5)
+            guilib.keyUp('s')
+            guilib.keyDown('d')
+            time.sleep(0.1)
+            guilib.keyUp('d')
+        
+        guilib.keyDown('s')
+        guilib.keyUp('a')
+        time.sleep(0.5)
+        guilib.keyUp('s')
+        guilib.keyDown('d')
+        time.sleep(0.4)
+        guilib.keyUp('d')
+        guilib.keyDown('w')
+        gui.schedule(0.1)
+        front = not solved['front'] and detectPuzzle(900, 200, 1300, 400)
+        gui.execute()
+        
+        if front:
+            gui.moveBy(200, 0)
+            time.sleep(0.5)
+            gui.startstop_solve()
+            guilib.keyUp('w')
+            return 'front'
+        
+        time.sleep(0.2)
+        guilib.keyDown('a')
+        time.sleep(0.5)
+        guilib.keyUp('a')
+        time.sleep(0.4)
+        gui.moveBy(1400, 0)
+        time.sleep(0.4)
+        gui.moveBy(1200, 0)
+        gui.startstop_solve()
+        guilib.keyUp('w')
+        assert(not solved['back'])
+        return 'back'
 
 def main():
     escape = cv.imread('images/escape.png')
@@ -459,7 +574,7 @@ def main():
         image = get_screenshot()
         res = cv.matchTemplate(image, escape, cv.TM_SQDIFF_NORMED)
         print(np.min(res))
-        if np.min(res) < 0.01:
+        if np.min(res) < 0.05:
             ready = True
     guilib.press("escape")
     time.sleep(0.5)
@@ -541,6 +656,10 @@ def main():
             solveBoard(data.FSSE, gui, i)
             gui.startstop_solve()
             solved[current] = True
+        
+        for img in storage:
+            plt.imshow(img)
+            plt.show()
         
         guilib.keyUp('shift')
         raise Exception('NYI')

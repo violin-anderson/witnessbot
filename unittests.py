@@ -4,11 +4,10 @@ import unittest
 import read, data, witness
 import cv2 as cv
 
-read.DEBUG = 1
-witness.DEBUG = 3
+read.DEBUG = 0
+witness.DEBUG = 0
 
 class TestBoardReading(unittest.TestCase):
-    pass
 # =============================================================================
 #     def test_1(self):
 #         print("one")
@@ -218,46 +217,44 @@ class TestBoardReading(unittest.TestCase):
 #         self.assertEqual(len(b.elements), 13)
 # =============================================================================
 
-# =============================================================================
-#     def test_4(self):
-#         print("four")
-#         image = cv.imread("unittests/four.png")
-#         image, _ = witness.warpBoard4(image)
-#         
-#         b = read.readBoard(image, data.FOUR)
-#         
-#         self.assertEqual(5, b.width)
-#         self.assertEqual(5, b.height)
-#         self.assertTrue(b.solve())
-#         print(b)
-#         self.assertEqual(len(b.elements), 18)
-#         
-#     def test_4b(self):
-#         print("fourb")
-#         image = cv.imread("unittests/fourb.png")
-#         image, _ = witness.warpBoard4(image)
-#         
-#         b = read.readBoard(image, data.FOUR)
-#         
-#         self.assertEqual(5, b.width)
-#         self.assertEqual(5, b.height)
-#         self.assertTrue(b.solve())
-#         print(b)
-#         self.assertEqual(len(b.elements), 20)
-#         
-#     def test_4c(self):
-#         print("fourc")
-#         image = cv.imread("unittests/fourc.png")
-#         image, _ = witness.warpBoard4(image)
-#         
-#         b = read.readBoard(image, data.FOUR)
-#         
-#         self.assertEqual(5, b.width)
-#         self.assertEqual(5, b.height)
-#         self.assertTrue(b.solve())
-#         print(b)
-#         self.assertEqual(len(b.elements), 23)
-# =============================================================================
+    def test_4(self):
+        print("four")
+        image = cv.imread("unittests/four.png")
+        image, _ = witness.warpBoard4(image)
+        
+        b = read.readBoard(image, data.FOUR)
+        
+        self.assertEqual(5, b.width)
+        self.assertEqual(5, b.height)
+        self.assertTrue(b.solve())
+        print(b)
+        self.assertEqual(len(b.elements), 18)
+        
+    def test_4b(self):
+        print("fourb")
+        image = cv.imread("unittests/fourb.png")
+        image, _ = witness.warpBoard4(image)
+        
+        b = read.readBoard(image, data.FOUR)
+        
+        self.assertEqual(5, b.width)
+        self.assertEqual(5, b.height)
+        self.assertTrue(b.solve())
+        print(b)
+        self.assertEqual(len(b.elements), 20)
+        
+    def test_4c(self):
+        print("fourc")
+        image = cv.imread("unittests/fourc.png")
+        image, _ = witness.warpBoard4(image)
+        
+        b = read.readBoard(image, data.FOUR)
+        
+        self.assertEqual(5, b.width)
+        self.assertEqual(5, b.height)
+        self.assertTrue(b.solve())
+        print(b)
+        self.assertEqual(len(b.elements), 23)
         
     def test_4d(self):
         print("fourd")
@@ -270,11 +267,63 @@ class TestBoardReading(unittest.TestCase):
         self.assertEqual(5, b.height)
         self.assertTrue(b.solve())
         print(b)
-        self.assertEqual(len(b.elements), 21)
+        self.assertEqual(len(b.elements), 23)
         
     def test_4e(self):
         print("foure")
         image = cv.imread("unittests/foure.png")
+        image, _ = witness.warpBoard4(image)
+        
+        b = read.readBoard(image, data.FOUR)
+        
+        self.assertEqual(5, b.width)
+        self.assertEqual(5, b.height)
+        self.assertTrue(b.solve())
+        print(b)
+        self.assertEqual(len(b.elements), 25)
+        
+    def test_4f(self):
+        print("fourf")
+        image = cv.imread("unittests/fourf.png")
+        image, _ = witness.warpBoard4(image)
+        
+        b = read.readBoard(image, data.FOUR)
+        
+        self.assertEqual(5, b.width)
+        self.assertEqual(5, b.height)
+        self.assertTrue(b.solve())
+        print(b)
+        self.assertEqual(len(b.elements), 26)
+                
+    def test_4g(self):
+        print("fourg")
+        image = cv.imread("unittests/fourg.png")
+        image, _ = witness.warpBoard4(image)
+        
+        b = read.readBoard(image, data.FOUR)
+        
+        self.assertEqual(5, b.width)
+        self.assertEqual(5, b.height)
+        self.assertTrue(b.solve())
+        print(b)
+        self.assertEqual(len(b.elements), 26)
+                
+    def test_4h(self):
+        print("fourh")
+        image = cv.imread("unittests/fourh.png")
+        image, _ = witness.warpBoard4(image)
+        
+        b = read.readBoard(image, data.FOUR)
+        
+        self.assertEqual(5, b.width)
+        self.assertEqual(5, b.height)
+        self.assertTrue(b.solve())
+        print(b)
+        self.assertEqual(len(b.elements), 24)
+                
+    def test_4i(self):
+        print("fouri")
+        image = cv.imread("unittests/fouri.png")
         image, _ = witness.warpBoard4(image)
         
         b = read.readBoard(image, data.FOUR)
@@ -333,7 +382,23 @@ class TestBoardReading(unittest.TestCase):
 #         self.assertTrue(b.solve())
 #         print(b)
 #         self.assertEqual(len(b.elements), 47)
-# 
+# =============================================================================
+    
+# =============================================================================
+#     def test_5e(self):
+#         print("fivee")
+#         image = cv.imread("unittests/fivee.png")
+#         
+#         b = read.readBoard(image, data.FSSE)
+#         
+#         self.assertEqual(7, b.width)
+#         self.assertEqual(7, b.height)
+#         self.assertTrue(b.solve())
+#         print(b)
+#         self.assertEqual(len(b.elements), 47)
+# =============================================================================
+
+# =============================================================================
 #     def test_6(self):
 #         print("six")
 #         image = cv.imread("unittests/six.png")

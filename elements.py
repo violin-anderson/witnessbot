@@ -52,6 +52,8 @@ class EdgeHex(Element):
         self.c2 = None
     def __repr__(self):
         return f"EdgeHex@{self.x},{self.y}; {self.x2},{self.y2}"
+    def __eq__(self, other):
+        return self.type == other.type and self.x == other.x and self.y == other.y and self.x2 == other.x2 and self.y2 == other.y2
 
 class Star(Element):
     def __init__(self, x, y, color='w'):

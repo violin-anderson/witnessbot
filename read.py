@@ -47,7 +47,7 @@ def find_centers(image, dim, boardData):
         #plt.show()
     
     arr = np.sum(clipped, dim)
-    arr = np.greater(arr, 15)
+    arr = np.greater(arr, boardData.linethresh)
     arr = np.diff(arr.astype(int))
     starts = np.argwhere(arr==1)
     ends = np.argwhere(arr==-1)
@@ -59,7 +59,7 @@ def find_centers(image, dim, boardData):
 def get_linemap(image, boardData):
     #image = cv.cvtColor(image, cv.COLOR_BGR2HSV)
     if boardData.name == "four":
-        findline = segmentation.flood(image, boardData.startcoords, tolerance=20)
+        findline = segmentation.flood(image, boardData.startcoords, tolerance=40)
     else:
         image = cv.cvtColor(image, cv.COLOR_BGR2Lab)
         findline = segmentation.flood(image[:,:,1], boardData.startcoords, tolerance=10)
@@ -92,7 +92,7 @@ def clean_hexes(image, boardData):
             plt.imshow(demo)
             plt.show()
             
-        image = segmentation.flood_fill(image, locs[-1], image[boardData.startcoords], tolerance=30)
+        image = segmentation.flood_fill(image, locs[-1], image[boardData.startcoords], tolerance=40)
         res = cv.matchTemplate(image, template, cv.TM_CCOEFF_NORMED)
         _, max_val, _, max_loc = cv.minMaxLoc(res)
         

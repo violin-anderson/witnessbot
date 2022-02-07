@@ -351,18 +351,21 @@ class Board():
             startnode = cornermap[ys][xs]
             for sln in dfs(startnode):
                 groups = getGroups(flatCells)
-                sln = \
-"""._. . ._._._.
-. | . | . . .
-. | . |_._. .
-. | . . . | .
-. |_._. . | .
-. . . | . | .
-._._._| . |_."""
-                #self.cornermap = cornermap
-                #if self.__str__() == sln:
-                #    print("here")
-                #del self.cornermap
+# =============================================================================
+#                 sln = \
+# """. . . . . .
+# . . . . . |
+# . . . . . |
+# . . . . . |
+# . . . . . |
+# ._._._._._|"""
+#                 self.cornermap = cornermap
+#                 if self.__str__() == sln:
+#                     print("here")
+#                 else:
+#                     del self.cornermap
+#                 del self.cornermap
+# =============================================================================
                 if validateGroups(groups, (self.width, self.height), cornermap):
                     self.cornermap = cornermap
                     self.cellmap = cellmap
