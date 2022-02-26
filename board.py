@@ -353,18 +353,19 @@ class Board():
                 groups = getGroups(flatCells)
 # =============================================================================
 #                 sln = \
-# """. . . . . .
-# . . . . . |
-# . . . . . |
-# . . . . . |
-# . . . . . |
-# ._._._._._|"""
+# """._._._._._. .
+# . ._._._. | |
+# ._| . . | | |
+# | ._. . |_| |
+# | | | . . ._|
+# | | |_._._| .
+# | |_._._._._."""
 #                 self.cornermap = cornermap
+#                 #print(self)
 #                 if self.__str__() == sln:
 #                     print("here")
 #                 else:
 #                     del self.cornermap
-#                 del self.cornermap
 # =============================================================================
                 if validateGroups(groups, (self.width, self.height), cornermap):
                     self.cornermap = cornermap

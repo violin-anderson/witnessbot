@@ -13,7 +13,7 @@ DEBUG = 0
 BASETHRESHOLD = 40
 BLACKTHRESHOLD = 20
 BOARDERTHRESHOLD = 30
-STARTHRESH = 0.7
+STARTHRESH = 0.6
 SQUARETHRESH = 0.75
 HEXTHRESH = 15
 
@@ -24,8 +24,7 @@ BLOCKTHRESHOLD = 0.95
 
 TETRAD = 13
 TETSPRD = 3
-TETTHRESH = 0.6
-
+TETTHRESH = 0.5
 
 def find_centers(image, dim, boardData):
     shape = boardData.blurshape
@@ -179,12 +178,13 @@ def add_edgeHexes(elts, vert_centers, horiz_centers, hexes):
             elts.append(elements.EdgeHex(ix, iy, ix, iy-1))
 
 def get_hexes(image, linemap, vert_centers, horiz_centers, boardData):
-    if not boardData.hexes or (len(vert_centers) != 5 and len(vert_centers) != 7):
+    if not boardData.hexes or not ((len(vert_centers) == 5 and len(horiz_centers) == 5)\
+    or (len(vert_centers) == 7 and len(horiz_centers) == 7)):
         return []
     
     if len(vert_centers) == 7:
         image2 = cv.cvtColor(image, cv.COLOR_BGR2HSV)[:,:,2]
-        delta = 13
+        delta = 11
         if DEBUG >= 2:
             plt.imshow(image[:,:,0])
             plt.show()
@@ -208,10 +208,12 @@ def get_hexes(image, linemap, vert_centers, horiz_centers, boardData):
                 
                 if DEBUG >= 3:
                     print(f"{ix}, {iy} hex: ctr {center}, edg {edge}")
+                if edge is None:
+                    continue
                 if edge > center and edge - center > HEXTHRESH:
                     elts.append(elements.Hex(ix, iy))
                 if len(vert_centers) == 7 and center > edge and center - edge > 80:
-                    if image[coords][1] > image[y,x,0]:
+                    if image[y,x][2] > 200:
                         elts.append(elements.Hex(ix, iy, 'o'))
                     else:
                         elts.append(elements.Hex(ix, iy, 'c'))
@@ -239,7 +241,7 @@ def map_tetris(locsquare, currloc, currxy, foundxy):
     return foundxy
 
 def get_cell_objects(vert_centers, horiz_centers, frame, boardData):
-    if not (boardData.stars or boardData.squares) or len(vert_centers) != 5:
+    if not (boardData.stars or boardData.squares or boardData.colorsquares) or len(vert_centers) != 5 or len(horiz_centers) != 5:
         return []
     
     elts = []
@@ -253,23 +255,51 @@ def get_cell_objects(vert_centers, horiz_centers, frame, boardData):
     
     for x in range(len(horiz_centers)-1):
         for y in range(len(vert_centers)-1):
-            important = frame[vert_centers[y]+6:vert_centers[y+1]-6, horiz_centers[x]+6:horiz_centers[x+1]-6][:,:,0]
-            tolerance = 12
+            square = frame[horiz_centers[y]+6:horiz_centers[y+1]-6, vert_centers[x]+6:vert_centers[x+1]-6]
+            tolerance = 16
             if boardData.squares:
                 tolerance = 25
-            for start in [(10, 10), (important.shape[0]-10, 10), (10, important.shape[1]-10), (important.shape[0]-10, important.shape[1]-10)]:
+            if boardData.colorsquares:
+                important = square[:,:,2]
+            else:
+                important = square[:,:,0]
+            if square[important.shape[0]//2, important.shape[1]//2, 2] > 100:
+                important = segmentation.flood_fill(important, (important.shape[0]//2, important.shape[1]//2), 0, tolerance=1)
+            
+            delta = important.shape[0]//8
+            for start in [(delta, delta), (important.shape[0]-delta, delta), (delta, important.shape[1]-delta), (important.shape[0]-delta, important.shape[1]-delta)]:
                 important = segmentation.flood_fill(important, start, 255, tolerance=tolerance)
+            important = (important == 255) * 255
             
             if DEBUG >= 2:
                 plt.subplot(4, 4, x+1 + y*4),plt.imshow(important, norm=colors.Normalize(0, 255))
             
-            if boardData.squares:
-                center = important[important.shape[0]//2, important.shape[1]//2]
+            if boardData.colorsquares:
+                if important[important.shape[0]//2, important.shape[1]//2] == 255:
+                    continue
+                
+                center = square[important.shape[0]//2, important.shape[1]//2, 2]
                 if DEBUG >= 3:
                     print(f"Sq {x}, {y}: {center}")
-                if center < 20:
+                if center < 110:
+                    if square[important.shape[0]//2, important.shape[1]//2, 0] > 110:
+                        elts.append(elements.Square(x, y, 'b'))
+                    else:
+                        elts.append(elements.Square(x, y, 'g'))
+                elif center < 220:
+                    elts.append(elements.Square(x, y, 'w'))
+                continue
+            
+            if boardData.squares:
+                if important[important.shape[0]//2, important.shape[1]//2] == 255:
+                    continue
+                
+                center = square[important.shape[0]//2, important.shape[1]//2, 0]
+                if DEBUG >= 3:
+                    print(f"Sq {x}, {y}: {center}")
+                if center < 100:
                     elts.append(elements.Square(x, y, 'b'))
-                elif center < 200:
+                elif center < 220:
                     elts.append(elements.Square(x, y, 'w'))
                 continue
             
@@ -283,8 +313,27 @@ def get_cell_objects(vert_centers, horiz_centers, frame, boardData):
                     continue
                 
                 loctetris = feature.match_template((important == 255).astype(int), tetris)
-                if np.max(loctetris) > TETTHRESH:
-                    tetrismap = map_tetris(loctetris, np.unravel_index(np.argmax(loctetris), loctetris.shape), (0, 0), [(0, 0)])
+                
+                # Do again with a different tolerance because tetrises are finicky
+                important = square[:,:,0]
+                for start in [(delta, delta), (important.shape[0]-delta, delta), (delta, important.shape[1]-delta), (important.shape[0]-delta, important.shape[1]-delta)]:
+                    important = segmentation.flood_fill(important, start, 255, tolerance=10)
+                important = (important == 255) * 255
+                
+                loctetris2 = feature.match_template((important == 255).astype(int), tetris)
+                
+                if np.max(loctetris) > TETTHRESH or np.max(loctetris2) > TETTHRESH:
+                    tetrismap = tetrismap2 = None
+                    if np.max(loctetris) > TETTHRESH:
+                        tetrismap = map_tetris(loctetris, np.unravel_index(np.argmax(loctetris), loctetris.shape), (0, 0), [(0, 0)])
+                    
+                    if np.max(loctetris2) > TETTHRESH:
+                        tetrismap2 = map_tetris(loctetris2, np.unravel_index(np.argmax(loctetris2), loctetris2.shape), (0, 0), [(0, 0)])
+                    if tetrismap is None or (tetrismap2 is not None and len(tetrismap2) > len(tetrismap)):
+                        tetrismap = tetrismap2
+                        if DEBUG >= 2:
+                            plt.subplot(4, 4, x+1 + y*4),plt.imshow(important, norm=colors.Normalize(0, 255))
+                    
                     elts.append(elements.Tetris(x, y, tetrismap))
     
     if DEBUG >= 2:
@@ -312,7 +361,8 @@ def readBoard(image, boardData):
     
     elts = []
     
-    elts.extend(get_blocks(vert_centers, horiz_centers, linemap))
+    if not boardData.colorsquares:
+        elts.extend(get_blocks(vert_centers, horiz_centers, linemap))
     
     if boardData.edgeHexes:
         assert(len(hexes) == 2)
