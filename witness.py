@@ -75,7 +75,9 @@ class WitnessGUI:
         guilib.moveTo(adjx, adjy)
         self.mousecoords = (self.mousecoords[0] + x, self.mousecoords[1] + y)
     
-    def moveTo(self, x, y):
+    def moveTo(self, x, y=None):
+        if y is None:
+            y = self.CENTER[1]-1
         if self.walking:
             self.moveBy(x-self.CENTER[0], y-self.CENTER[1])
         else:
@@ -162,7 +164,7 @@ def solveBoard4(gui):
     gui.startstop_solve()
     b = read.readBoard(image, data.FOUR)
     
-    if not b.solve():
+    if not b.solve(optimal=True):
         raise Exception("No solution found")
     print(b)
     
@@ -175,6 +177,8 @@ def solveBoard4(gui):
     for c in coords[1:]:
         gui.moveTo(FOURREGION[0] + warpfn(c)[0][0], FOURREGION[1] + warpfn(c)[0][1])
     gui.click()
+    
+    return b
 
 def waitForPuzzle(x, y, x2, y2):
     loaded = False
@@ -634,17 +638,6 @@ def walkToNine(current, gui):
         gui.moveBy(-850, 0)
         time.sleep(0.6)
         guilib.keyUp('w')
-        
-    guilib.keyDown('w')
-    time.sleep(0.3)
-    guilib.keyUp('w')
-    gui.startstop_solve()
-    time.sleep(0.5)
-    gui.startstop_solve()
-    guilib.keyDown('s')
-    time.sleep(0.4)
-    guilib.keyUp('s')
-    time.sleep(0.4)
 
 def resize(image, x, y, x2, y2):
     image = image[y:y2,x:x2]
@@ -777,6 +770,81 @@ def solveTen(gui):
     gui.click()
     gui.startstop_solve()
 
+def waitForCross(movingLeft):
+    # Wait until no orange visible
+    orange = np.argwhere(get_screenshot()[250:750,550:1370,2] > 150)
+    while len(orange) != 0:
+        orange = np.argwhere(get_screenshot()[250:750,550:1370,2] > 150)
+    
+    # Wait until in the center of a block
+    avg = np.average(orange[:,1])
+    while len(orange) == 0 or (movingLeft and (avg < 960-550)) or ((not movingLeft) and (avg > 960-550)):
+        orange = np.argwhere(get_screenshot()[250:750,550:1370,2] > 150)
+        avg = np.average(orange[:,1])
+
+def doPuzzle(gui, board):
+    gui.moveBy(1400, 0)
+    guilib.keyDown('w')
+    time.sleep(1.25)
+    gui.moveBy(-450, 0)
+    gui.schedule(1)
+    hall = cv.imread("images/hall.png")
+    maxloc = findimage(hall)
+    gui.moveTo(maxloc[0] + 200, maxloc[1] + 1000)
+    gui.execute()
+    guilib.keyUp('w')
+    
+    print(board)
+    current = board.startnode
+    facing = (current.to.x - current.x, current.to.y - current.y)
+    if facing == (0, -1):
+        gui.moveBy(660, 0)
+        movingLeft = True
+        guilib.keyDown('a')
+    elif facing == (1, 0):
+        gui.moveBy(-640, 0)
+        movingLeft = False
+        guilib.keyDown('d')
+    current = current.to
+    
+    while current.to is not None:
+        waitForCross(movingLeft)
+        
+        newfacing = (current.to.x - current.x, current.to.y - current.y)
+        if facing != newfacing:
+            if facing[0] == 0:
+                gui.moveBy(-1300*facing[1]*newfacing[0], 0)
+            else:
+                gui.moveBy(1300*facing[0]*newfacing[1], 0)
+        current = current.to
+        facing = newfacing
+        
+        # Figure out if we need to face the other direction
+        if facing[0] == 0:
+            reverse = (current.x < 3) == (movingLeft == (facing[1] > 0))
+        else:
+            reverse = (current.y < 3) != (movingLeft == (facing[0] > 0))
+        # Turn around if needed
+        if reverse:
+            gui.moveBy(2600, 0)
+            if movingLeft:
+                guilib.keyUp('a')
+                guilib.keyDown('d')
+            else:
+                guilib.keyUp('d')
+                guilib.keyDown('a')
+            movingLeft = not movingLeft
+        
+    waitForCross(movingLeft)
+    guilib.keyUp('a')
+    guilib.keyUp('d')
+    if movingLeft:
+        gui.moveBy(-2000, -600)
+    else:
+        gui.moveBy(2000, -600)
+    guilib.keyDown('w')
+    guilib.keyUp('w')
+
 def main():
     escape = cv.imread('images/escape.png')
     music = cv.imread('images/record.png')
@@ -859,7 +927,7 @@ def main():
         gui.moveBy(-1250, 250)
         
         time.sleep(0.5)
-        solveBoard4(gui)
+        fourBoard = solveBoard4(gui)
         gui.startstop_solve()
         
         # Go through FSSE
@@ -920,6 +988,17 @@ def main():
         
         walkToNine(current, gui)
         
+        guilib.keyDown('w')
+        time.sleep(0.3)
+        guilib.keyUp('w')
+        gui.startstop_solve()
+        time.sleep(0.5)
+        gui.startstop_solve()
+        guilib.keyDown('s')
+        time.sleep(0.4)
+        guilib.keyUp('s')
+        time.sleep(0.4)
+        
         # Solve Nine
         solveNine(gui)
         
@@ -935,6 +1014,17 @@ def main():
         time.sleep(0.3)
         
         solveTen(gui)
+        
+# =============================================================================
+#         image, _ = warpBoard4(cv.imread("unittests/fourc.png"))
+#         fourBoard = read.readBoard(image, data.FOUR)
+#         fourBoard.solve(optimal=True)
+# =============================================================================
+        
+        doPuzzle(gui, fourBoard)
+
+        guilib.keyUp('shift')
+        raise Exception('NYI')
         
         # Walk to the start from Ten
         guilib.keyDown('w')

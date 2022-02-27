@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import itertools
+import itertools, copy
 import elements as boardElements
 
 class Corner():
@@ -264,7 +264,7 @@ class Board():
 # =============================================================================
         return ret
     
-    def solve(self):
+    def solve(self, optimal=False):
         cornermap = []
         for y in range(self.height + 1):
             row = []
@@ -371,64 +371,14 @@ class Board():
                     self.cornermap = cornermap
                     self.cellmap = cellmap
                     self.startnode = startnode
-                    return True
-# =============================================================================
-#                     length = len(self.getSlnCoords())
-#                     if not best or length < best:
-#                         best = length
-#                         [c.store() for r in cornermap for c in r]
-#         
-#         if best:
-#             [c.restore() for r in cornermap for c in r]
-#             return True
-# =============================================================================
+                    if not optimal:
+                        return True
+                    length = len(self.getSlnCoords())
+                    if not best or length < best:
+                        best = length
+                        [c.store() for r in cornermap for c in r]
+        
+        if best:
+            [c.restore() for r in cornermap for c in r]
+            return True
         return False
-
-if __name__ == "__main__":
-    # =============================================================================
-    # elts = [elements.Tetris(1, 0, [(0, 0), (1, 0), (-1, 0), (1, 1)]),
-    #         elements.Tetris(0, 3, [(0, 0), (1, 0), (2, 0), (3, 0)]),
-    #         elements.Tetris(2, 4, [(0, 0), (1, 0), (-1, 0), (1, 1)], True),
-    #         elements.Tetris(1, 7, [(0, 0), (1, 0), (-1, 0), (1, 1)], True),
-    #         elements.Square(4, 0, 'b'), elements.Square(4, 1, 'b'),
-    #         elements.Square(7, 0, 'b'), elements.Square(7, 1, 'b'),
-    #         elements.Square(4, 2, 'w'), elements.Square(4, 3, 'w'),
-    #         elements.Square(7, 2, 'w'), elements.Square(7, 3, 'w'),
-    #         elements.Block(5, 4, 6, 4), elements.Block(5, 5, 6, 5),
-    #         elements.Block(6, 6, 6, 7), elements.Block(6, 7, 7, 7),
-    #         elements.Block(8, 2, 8, 3), elements.Block(8, 5, 8, 6),
-    #         elements.EdgeHex(7, 5, 8, 5), elements.EdgeHex(5, 7, 6, 7)
-    #         ]
-    # b = board.Board([0]*9, [0]*9, elts, [(8, 8)], [(1, 8)])
-    # =============================================================================
-    # =============================================================================
-    # elts = [elements.Tetris(0, 0, [(0, 0), (1, 0), (0, 1), (1, 1)]),
-    #         elements.Tetris(0, 1, [(0, 0), (0, 1)], negative=True),
-    #         elements.Tetris(2, 3, [(0, 0), (0, 1), (-1, 1)]),
-    #         elements.Tetris(3, 0, [(0, 0)], negative=True),
-    #         elements.Tetris(4, 1, [(0, 0)], negative=True),
-    #         elements.Tetris(3, 2, [(0, 0), (1, 0), (0, 1)], negative=True),
-    #         elements.Block(3, 0, 4, 0), elements.Block(5, 1, 5, 2),
-    #         elements.Hex(5, 0), elements.EdgeHex(0, 4, 0, 3), 
-    #         elements.EdgeHex(0, 2, 0, 3)
-    #         ]
-    # b = board.Board([0]*6, [0]*5, elts, [(0, 4)], [(5, 0)])
-    # =============================================================================
-    # =============================================================================
-    # elts = [elements.Star(6, 0, 'm'), elements.Star(0, 0, 'm'),
-    #         elements.Star(1, 2, 'm'), elements.Star(6, 2, 'm'),
-    #         elements.Tetris(3, 0, [(0, 0), (0, 1), (0, -1)]),
-    #         elements.Tetris(3, 1, [(0, 0), (1, 0), (-1, 0)]),
-    #         elements.Tetris(3, 2, [(0, 0), (1, 0), (-1, 0)]),
-    #         elements.Null(0, 2)]
-    # b = board.Board([0]*7, [0]*3, elts, [(0, 3)], [(7, 3)])
-    # =============================================================================
-    elts = [boardElements.Block(0, 1, 1, 1), boardElements.Block(1, 0, 1, 1),
-            boardElements.Block(3, 0, 3, 1), boardElements.Block(4, 2, 5, 2),
-            boardElements.Block(5, 2, 5, 3), boardElements.Block(5, 4, 5, 5),
-            boardElements.Hex(0, 3, 'c'), boardElements.Hex(2, 2, 'c'),
-            boardElements.Hex(4, 1, 'o'), boardElements.Hex(4, 6, 'o'),
-            boardElements.Hex(0, 4), boardElements.Hex(5, 2)]
-    b = Board([0]*7, [0]*7, elts, [(0, 6), (6, 0)], [(0, 0), (6, 6)], symmetry='rot')
-    b.solve()
-    print(b)

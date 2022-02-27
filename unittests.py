@@ -215,124 +215,124 @@ class TestBoardReading(unittest.TestCase):
 #         self.assertTrue(b.solve())
 #         print(b)
 #         self.assertEqual(len(b.elements), 13)
-# 
-#     def test_4(self):
-#         print("four")
-#         image = cv.imread("unittests/four.png")
-#         image, _ = witness.warpBoard4(image)
-#         
-#         b = read.readBoard(image, data.FOUR)
-#         
-#         self.assertEqual(5, b.width)
-#         self.assertEqual(5, b.height)
-#         self.assertTrue(b.solve())
-#         print(b)
-#         self.assertEqual(len(b.elements), 18)
-#         
-#     def test_4b(self):
-#         print("fourb")
-#         image = cv.imread("unittests/fourb.png")
-#         image, _ = witness.warpBoard4(image)
-#         
-#         b = read.readBoard(image, data.FOUR)
-#         
-#         self.assertEqual(5, b.width)
-#         self.assertEqual(5, b.height)
-#         self.assertTrue(b.solve())
-#         print(b)
-#         self.assertEqual(len(b.elements), 20)
-#         
-#     def test_4c(self):
-#         print("fourc")
-#         image = cv.imread("unittests/fourc.png")
-#         image, _ = witness.warpBoard4(image)
-#         
-#         b = read.readBoard(image, data.FOUR)
-#         
-#         self.assertEqual(5, b.width)
-#         self.assertEqual(5, b.height)
-#         self.assertTrue(b.solve())
-#         print(b)
-#         self.assertEqual(len(b.elements), 23)
-#         
-#     def test_4d(self):
-#         print("fourd")
-#         image = cv.imread("unittests/fourd.png")
-#         image, _ = witness.warpBoard4(image)
-#         
-#         b = read.readBoard(image, data.FOUR)
-#         
-#         self.assertEqual(5, b.width)
-#         self.assertEqual(5, b.height)
-#         self.assertTrue(b.solve())
-#         print(b)
-#         self.assertEqual(len(b.elements), 23)
-#         
-#     def test_4e(self):
-#         print("foure")
-#         image = cv.imread("unittests/foure.png")
-#         image, _ = witness.warpBoard4(image)
-#         
-#         b = read.readBoard(image, data.FOUR)
-#         
-#         self.assertEqual(5, b.width)
-#         self.assertEqual(5, b.height)
-#         self.assertTrue(b.solve())
-#         print(b)
-#         self.assertEqual(len(b.elements), 25)
-#         
-#     def test_4f(self):
-#         print("fourf")
-#         image = cv.imread("unittests/fourf.png")
-#         image, _ = witness.warpBoard4(image)
-#         
-#         b = read.readBoard(image, data.FOUR)
-#         
-#         self.assertEqual(5, b.width)
-#         self.assertEqual(5, b.height)
-#         self.assertTrue(b.solve())
-#         print(b)
-#         self.assertEqual(len(b.elements), 26)
-#                 
-#     def test_4g(self):
-#         print("fourg")
-#         image = cv.imread("unittests/fourg.png")
-#         image, _ = witness.warpBoard4(image)
-#         
-#         b = read.readBoard(image, data.FOUR)
-#         
-#         self.assertEqual(5, b.width)
-#         self.assertEqual(5, b.height)
-#         self.assertTrue(b.solve())
-#         print(b)
-#         self.assertEqual(len(b.elements), 26)
-#                 
-#     def test_4h(self):
-#         print("fourh")
-#         image = cv.imread("unittests/fourh.png")
-#         image, _ = witness.warpBoard4(image)
-#         
-#         b = read.readBoard(image, data.FOUR)
-#         
-#         self.assertEqual(5, b.width)
-#         self.assertEqual(5, b.height)
-#         self.assertTrue(b.solve())
-#         print(b)
-#         self.assertEqual(len(b.elements), 24)
-#                 
-#     def test_4i(self):
-#         print("fouri")
-#         image = cv.imread("unittests/fouri.png")
-#         image, _ = witness.warpBoard4(image)
-#         
-#         b = read.readBoard(image, data.FOUR)
-#         
-#         self.assertEqual(5, b.width)
-#         self.assertEqual(5, b.height)
-#         self.assertTrue(b.solve())
-#         print(b)
-#         self.assertEqual(len(b.elements), 25)
 # =============================================================================
+
+    def test_4(self):
+        print("four")
+        image = cv.imread("unittests/four.png")
+        image, _ = witness.warpBoard4(image)
+        
+        b = read.readBoard(image, data.FOUR)
+        
+        self.assertEqual(5, b.width)
+        self.assertEqual(5, b.height)
+        self.assertTrue(b.solve(optimal=True))
+        print(b)
+        self.assertEqual(len(b.elements), 18)
+        
+    def test_4b(self):
+        print("fourb")
+        image = cv.imread("unittests/fourb.png")
+        image, _ = witness.warpBoard4(image)
+        
+        b = read.readBoard(image, data.FOUR)
+        
+        self.assertEqual(5, b.width)
+        self.assertEqual(5, b.height)
+        self.assertTrue(b.solve(optimal=True))
+        print(b)
+        self.assertEqual(len(b.elements), 20)
+        
+    def test_4c(self):
+        print("fourc")
+        image = cv.imread("unittests/fourc.png")
+        image, _ = witness.warpBoard4(image)
+        
+        b = read.readBoard(image, data.FOUR)
+        
+        self.assertEqual(5, b.width)
+        self.assertEqual(5, b.height)
+        self.assertTrue(b.solve(optimal=True))
+        print(b)
+        self.assertEqual(len(b.elements), 23)
+        
+    def test_4d(self):
+        print("fourd")
+        image = cv.imread("unittests/fourd.png")
+        image, _ = witness.warpBoard4(image)
+        
+        b = read.readBoard(image, data.FOUR)
+        
+        self.assertEqual(5, b.width)
+        self.assertEqual(5, b.height)
+        self.assertTrue(b.solve(optimal=True))
+        print(b)
+        self.assertEqual(len(b.elements), 23)
+        
+    def test_4e(self):
+        print("foure")
+        image = cv.imread("unittests/foure.png")
+        image, _ = witness.warpBoard4(image)
+        
+        b = read.readBoard(image, data.FOUR)
+        
+        self.assertEqual(5, b.width)
+        self.assertEqual(5, b.height)
+        self.assertTrue(b.solve(optimal=True))
+        print(b)
+        self.assertEqual(len(b.elements), 25)
+        
+    def test_4f(self):
+        print("fourf")
+        image = cv.imread("unittests/fourf.png")
+        image, _ = witness.warpBoard4(image)
+        
+        b = read.readBoard(image, data.FOUR)
+        
+        self.assertEqual(5, b.width)
+        self.assertEqual(5, b.height)
+        self.assertTrue(b.solve(optimal=True))
+        print(b)
+        self.assertEqual(len(b.elements), 26)
+                
+    def test_4g(self):
+        print("fourg")
+        image = cv.imread("unittests/fourg.png")
+        image, _ = witness.warpBoard4(image)
+        
+        b = read.readBoard(image, data.FOUR)
+        
+        self.assertEqual(5, b.width)
+        self.assertEqual(5, b.height)
+        self.assertTrue(b.solve(optimal=True))
+        print(b)
+        self.assertEqual(len(b.elements), 26)
+                
+    def test_4h(self):
+        print("fourh")
+        image = cv.imread("unittests/fourh.png")
+        image, _ = witness.warpBoard4(image)
+        
+        b = read.readBoard(image, data.FOUR)
+        
+        self.assertEqual(5, b.width)
+        self.assertEqual(5, b.height)
+        self.assertTrue(b.solve(optimal=True))
+        print(b)
+        self.assertEqual(len(b.elements), 24)
+                
+    def test_4i(self):
+        print("fouri")
+        image = cv.imread("unittests/fouri.png")
+        image, _ = witness.warpBoard4(image)
+        
+        b = read.readBoard(image, data.FOUR)
+        
+        self.assertEqual(5, b.width)
+        self.assertEqual(5, b.height)
+        self.assertTrue(b.solve(optimal=True))
+        print(b)
+        self.assertEqual(len(b.elements), 25)
 
 # =============================================================================
 #     def test_5(self):
@@ -521,320 +521,322 @@ class TestBoardReading(unittest.TestCase):
 #         self.assertEqual(len(b.elements), 14)
 #     
 # =============================================================================
-    def test_7(self):
-        print("seven")
-        image = cv.imread("unittests/seven.png")
-        
-        b = read.readBoard(image, data.FSSE)
-        
-        self.assertEqual(4, b.width)
-        self.assertEqual(4, b.height)
-        
-        for elt in b.elements:
-            if elt.type == "tetris":
-                print(elt.shape)
-            if elt.type == "square":
-                self.assertTrue(False)
-        self.assertTrue(b.solve())
-        print(b)
-        
-        self.assertEqual(len(b.elements), 12)
-        self.assertEqual(len(b.elements[-2].shape), 4)
-        self.assertEqual(len(b.elements[-1].shape), 3)
-    
-    def test_7b(self):
-        print("sevenb")
-        image = cv.imread("unittests/sevenb.png")
-        
-        b = read.readBoard(image, data.FSSE)
-        
-        self.assertEqual(4, b.width)
-        self.assertEqual(4, b.height)
-        
-        for elt in b.elements:
-            if elt.type == "tetris":
-                print(elt.shape)
-            if elt.type == "square":
-                self.assertTrue(False)
-        self.assertTrue(b.solve())
-        print(b)
-        
-        self.assertEqual(len(b.elements), 11)
-        self.assertEqual(len(b.elements[-3].shape), 4)
-        self.assertEqual(len(b.elements[-1].shape), 3)
-    
-    def test_7c(self):
-        print("sevenc")
-        image = cv.imread("unittests/sevenc.png")
-        
-        b = read.readBoard(image, data.FSSE)
-        
-        self.assertEqual(4, b.width)
-        self.assertEqual(4, b.height)
-        
-        for elt in b.elements:
-            if elt.type == "tetris":
-                print(elt.shape)
-            if elt.type == "square":
-                self.assertTrue(False)
-        self.assertTrue(b.solve())
-        print(b)
-        
-        self.assertEqual(len(b.elements), 11)
-        self.assertEqual(len(b.elements[-3].shape), 3)
-        self.assertEqual(len(b.elements[-1].shape), 3)
-
-    def test_7d(self):
-        print("sevend")
-        image = cv.imread("unittests/sevend.png")
-        
-        b = read.readBoard(image, data.FSSE)
-        
-        self.assertEqual(4, b.width)
-        self.assertEqual(4, b.height)
-        
-        for elt in b.elements:
-            if elt.type == "tetris":
-                print(elt.shape)
-            if elt.type == "square":
-                self.assertTrue(False)
-        self.assertTrue(b.solve())
-        print(b)
-        
-        self.assertEqual(len(b.elements), 11)
-        self.assertEqual(len(b.elements[-3].shape), 4)
-        self.assertEqual(len(b.elements[-2].shape), 4)
-
-    def test_7e(self):
-        print("sevene")
-        image = cv.imread("unittests/sevene.png")
-        
-        b = read.readBoard(image, data.FSSE)
-        
-        self.assertEqual(4, b.width)
-        self.assertEqual(4, b.height)
-        
-        for elt in b.elements:
-            if elt.type == "tetris":
-                print(elt.shape)
-            if elt.type == "square":
-                self.assertTrue(False)
-        self.assertTrue(b.solve())
-        print(b)
-        
-        self.assertEqual(len(b.elements), 12)
-        self.assertEqual(len(b.elements[-2].shape), 4)
-        self.assertEqual(len(b.elements[-1].shape), 3)
-
-    def test_7f(self):
-        print("sevenf")
-        image = cv.imread("unittests/sevenf.png")
-        
-        b = read.readBoard(image, data.FSSE)
-        
-        self.assertEqual(4, b.width)
-        self.assertEqual(4, b.height)
-        
-        for elt in b.elements:
-            if elt.type == "tetris":
-                print(elt.shape)
-            if elt.type == "square":
-                self.assertTrue(False)
-        self.assertTrue(b.solve())
-        print(b)
-        
-        self.assertEqual(len(b.elements), 11)
-        self.assertEqual(len(b.elements[-3].shape), 4)
-        self.assertEqual(len(b.elements[-1].shape), 3)
-
-    def test_7g(self):
-        print("seveng")
-        image = cv.imread("unittests/seveng.png")
-        
-        b = read.readBoard(image, data.FSSE)
-        
-        self.assertEqual(4, b.width)
-        self.assertEqual(4, b.height)
-        
-        for elt in b.elements:
-            if elt.type == "tetris":
-                print(elt.shape)
-            if elt.type == "square":
-                self.assertTrue(False)
-        self.assertTrue(b.solve())
-        print(b)
-        
-        self.assertEqual(len(b.elements), 12)
-        self.assertEqual(len(b.elements[-3].shape), 5)
-        self.assertEqual(len(b.elements[-1].shape), 3)
-
-    def test_7h(self):
-        print("sevenh")
-        image = cv.imread("unittests/sevenh.png")
-        
-        b = read.readBoard(image, data.FSSE)
-        
-        self.assertEqual(4, b.width)
-        self.assertEqual(4, b.height)
-        
-        for elt in b.elements:
-            if elt.type == "tetris":
-                print(elt.shape)
-            if elt.type == "square":
-                self.assertTrue(False)
-        self.assertTrue(b.solve())
-        print(b)
-        
-        self.assertEqual(len(b.elements), 11)
-        self.assertEqual(len(b.elements[-3].shape), 3)
-        self.assertEqual(len(b.elements[-2].shape), 3)
-
-    def test_7i(self):
-        print("seveni")
-        image = cv.imread("unittests/seveni.png")
-        
-        b = read.readBoard(image, data.FSSE)
-        
-        self.assertEqual(4, b.width)
-        self.assertEqual(4, b.height)
-        
-        for elt in b.elements:
-            if elt.type == "tetris":
-                print(elt.shape)
-            if elt.type == "square":
-                self.assertTrue(False)
-        self.assertTrue(b.solve())
-        print(b)
-        
-        self.assertEqual(len(b.elements), 12)
-        self.assertEqual(len(b.elements[-2].shape), 5)
-        self.assertEqual(len(b.elements[-1].shape), 5)
-        
-    def test_7j(self):
-        print("sevenj")
-        image = cv.imread("unittests/sevenj.png")
-        
-        b = read.readBoard(image, data.FSSE)
-        
-        self.assertEqual(4, b.width)
-        self.assertEqual(4, b.height)
-        
-        for elt in b.elements:
-            if elt.type == "tetris":
-                print(elt.shape)
-            if elt.type == "square":
-                self.assertTrue(False)
-        self.assertTrue(b.solve())
-        print(b)
-        
-        self.assertEqual(len(b.elements), 12)
-        self.assertEqual(len(b.elements[-3].shape), 3)
-        self.assertEqual(len(b.elements[-2].shape), 3)
-                
-    def test_7k(self):
-        print("sevenk")
-        image = cv.imread("unittests/sevenk.png")
-        
-        b = read.readBoard(image, data.FSSE)
-        
-        self.assertEqual(4, b.width)
-        self.assertEqual(4, b.height)
-        
-        for elt in b.elements:
-            if elt.type == "tetris":
-                print(elt.shape)
-            if elt.type == "square":
-                self.assertTrue(False)
-        self.assertTrue(b.solve())
-        print(b)
-        
-        self.assertEqual(len(b.elements), 11)
-        self.assertEqual(len(b.elements[-3].shape), 3)
-        self.assertEqual(len(b.elements[-4].shape), 3)
-                
-    def test_7l(self):
-        print("sevenl")
-        image = cv.imread("unittests/sevenl.png")
-        
-        b = read.readBoard(image, data.FSSE)
-        
-        self.assertEqual(4, b.width)
-        self.assertEqual(4, b.height)
-        
-        for elt in b.elements:
-            if elt.type == "tetris":
-                print(elt.shape)
-            if elt.type == "square":
-                self.assertTrue(False)
-        self.assertTrue(b.solve())
-        print(b)
-        
-        self.assertEqual(len(b.elements), 10)
-        self.assertEqual(len(b.elements[-2].shape), 3)
-        self.assertEqual(len(b.elements[-4].shape), 4)
-                
-    def test_7m(self):
-        print("sevenm")
-        image = cv.imread("unittests/sevenm.png")
-        
-        b = read.readBoard(image, data.FSSE)
-        
-        self.assertEqual(4, b.width)
-        self.assertEqual(4, b.height)
-        
-        for elt in b.elements:
-            if elt.type == "tetris":
-                print(elt.shape)
-            if elt.type == "square":
-                self.assertTrue(False)
-        self.assertTrue(b.solve())
-        print(b)
-        
-        self.assertEqual(len(b.elements), 12)
-        self.assertEqual(len(b.elements[-1].shape), 5)
-        self.assertEqual(len(b.elements[-3].shape), 5)
-                
-    def test_7n(self):
-        print("sevenn")
-        image = cv.imread("unittests/sevenn.png")
-        
-        b = read.readBoard(image, data.FSSE)
-        
-        self.assertEqual(4, b.width)
-        self.assertEqual(4, b.height)
-        
-        for elt in b.elements:
-            if elt.type == "tetris":
-                print(elt.shape)
-            if elt.type == "square":
-                self.assertTrue(False)
-        self.assertTrue(b.solve())
-        print(b)
-        
-        self.assertEqual(len(b.elements), 12)
-        self.assertEqual(len(b.elements[-4].shape), 4)
-        self.assertEqual(len(b.elements[-1].shape), 3)
-                
-    def test_7o(self):
-        print("seveno")
-        image = cv.imread("unittests/seveno.png")
-        
-        b = read.readBoard(image, data.FSSE)
-        
-        self.assertEqual(4, b.width)
-        self.assertEqual(4, b.height)
-        
-        for elt in b.elements:
-            if elt.type == "tetris":
-                print(elt.shape)
-            if elt.type == "square":
-                self.assertTrue(False)
-        self.assertTrue(b.solve())
-        print(b)
-        
-        self.assertEqual(len(b.elements), 10)
-        self.assertEqual(len(b.elements[-3].shape), 3)
-        self.assertEqual(len(b.elements[-4].shape), 3)
+# =============================================================================
+#     def test_7(self):
+#         print("seven")
+#         image = cv.imread("unittests/seven.png")
+#         
+#         b = read.readBoard(image, data.FSSE)
+#         
+#         self.assertEqual(4, b.width)
+#         self.assertEqual(4, b.height)
+#         
+#         for elt in b.elements:
+#             if elt.type == "tetris":
+#                 print(elt.shape)
+#             if elt.type == "square":
+#                 self.assertTrue(False)
+#         self.assertTrue(b.solve())
+#         print(b)
+#         
+#         self.assertEqual(len(b.elements), 12)
+#         self.assertEqual(len(b.elements[-2].shape), 4)
+#         self.assertEqual(len(b.elements[-1].shape), 3)
+#     
+#     def test_7b(self):
+#         print("sevenb")
+#         image = cv.imread("unittests/sevenb.png")
+#         
+#         b = read.readBoard(image, data.FSSE)
+#         
+#         self.assertEqual(4, b.width)
+#         self.assertEqual(4, b.height)
+#         
+#         for elt in b.elements:
+#             if elt.type == "tetris":
+#                 print(elt.shape)
+#             if elt.type == "square":
+#                 self.assertTrue(False)
+#         self.assertTrue(b.solve())
+#         print(b)
+#         
+#         self.assertEqual(len(b.elements), 11)
+#         self.assertEqual(len(b.elements[-3].shape), 4)
+#         self.assertEqual(len(b.elements[-1].shape), 3)
+#     
+#     def test_7c(self):
+#         print("sevenc")
+#         image = cv.imread("unittests/sevenc.png")
+#         
+#         b = read.readBoard(image, data.FSSE)
+#         
+#         self.assertEqual(4, b.width)
+#         self.assertEqual(4, b.height)
+#         
+#         for elt in b.elements:
+#             if elt.type == "tetris":
+#                 print(elt.shape)
+#             if elt.type == "square":
+#                 self.assertTrue(False)
+#         self.assertTrue(b.solve())
+#         print(b)
+#         
+#         self.assertEqual(len(b.elements), 11)
+#         self.assertEqual(len(b.elements[-3].shape), 3)
+#         self.assertEqual(len(b.elements[-1].shape), 3)
+# 
+#     def test_7d(self):
+#         print("sevend")
+#         image = cv.imread("unittests/sevend.png")
+#         
+#         b = read.readBoard(image, data.FSSE)
+#         
+#         self.assertEqual(4, b.width)
+#         self.assertEqual(4, b.height)
+#         
+#         for elt in b.elements:
+#             if elt.type == "tetris":
+#                 print(elt.shape)
+#             if elt.type == "square":
+#                 self.assertTrue(False)
+#         self.assertTrue(b.solve())
+#         print(b)
+#         
+#         self.assertEqual(len(b.elements), 11)
+#         self.assertEqual(len(b.elements[-3].shape), 4)
+#         self.assertEqual(len(b.elements[-2].shape), 4)
+# 
+#     def test_7e(self):
+#         print("sevene")
+#         image = cv.imread("unittests/sevene.png")
+#         
+#         b = read.readBoard(image, data.FSSE)
+#         
+#         self.assertEqual(4, b.width)
+#         self.assertEqual(4, b.height)
+#         
+#         for elt in b.elements:
+#             if elt.type == "tetris":
+#                 print(elt.shape)
+#             if elt.type == "square":
+#                 self.assertTrue(False)
+#         self.assertTrue(b.solve())
+#         print(b)
+#         
+#         self.assertEqual(len(b.elements), 12)
+#         self.assertEqual(len(b.elements[-2].shape), 4)
+#         self.assertEqual(len(b.elements[-1].shape), 3)
+# 
+#     def test_7f(self):
+#         print("sevenf")
+#         image = cv.imread("unittests/sevenf.png")
+#         
+#         b = read.readBoard(image, data.FSSE)
+#         
+#         self.assertEqual(4, b.width)
+#         self.assertEqual(4, b.height)
+#         
+#         for elt in b.elements:
+#             if elt.type == "tetris":
+#                 print(elt.shape)
+#             if elt.type == "square":
+#                 self.assertTrue(False)
+#         self.assertTrue(b.solve())
+#         print(b)
+#         
+#         self.assertEqual(len(b.elements), 11)
+#         self.assertEqual(len(b.elements[-3].shape), 4)
+#         self.assertEqual(len(b.elements[-1].shape), 3)
+# 
+#     def test_7g(self):
+#         print("seveng")
+#         image = cv.imread("unittests/seveng.png")
+#         
+#         b = read.readBoard(image, data.FSSE)
+#         
+#         self.assertEqual(4, b.width)
+#         self.assertEqual(4, b.height)
+#         
+#         for elt in b.elements:
+#             if elt.type == "tetris":
+#                 print(elt.shape)
+#             if elt.type == "square":
+#                 self.assertTrue(False)
+#         self.assertTrue(b.solve())
+#         print(b)
+#         
+#         self.assertEqual(len(b.elements), 12)
+#         self.assertEqual(len(b.elements[-3].shape), 5)
+#         self.assertEqual(len(b.elements[-1].shape), 3)
+# 
+#     def test_7h(self):
+#         print("sevenh")
+#         image = cv.imread("unittests/sevenh.png")
+#         
+#         b = read.readBoard(image, data.FSSE)
+#         
+#         self.assertEqual(4, b.width)
+#         self.assertEqual(4, b.height)
+#         
+#         for elt in b.elements:
+#             if elt.type == "tetris":
+#                 print(elt.shape)
+#             if elt.type == "square":
+#                 self.assertTrue(False)
+#         self.assertTrue(b.solve())
+#         print(b)
+#         
+#         self.assertEqual(len(b.elements), 11)
+#         self.assertEqual(len(b.elements[-3].shape), 3)
+#         self.assertEqual(len(b.elements[-2].shape), 3)
+# 
+#     def test_7i(self):
+#         print("seveni")
+#         image = cv.imread("unittests/seveni.png")
+#         
+#         b = read.readBoard(image, data.FSSE)
+#         
+#         self.assertEqual(4, b.width)
+#         self.assertEqual(4, b.height)
+#         
+#         for elt in b.elements:
+#             if elt.type == "tetris":
+#                 print(elt.shape)
+#             if elt.type == "square":
+#                 self.assertTrue(False)
+#         self.assertTrue(b.solve())
+#         print(b)
+#         
+#         self.assertEqual(len(b.elements), 12)
+#         self.assertEqual(len(b.elements[-2].shape), 5)
+#         self.assertEqual(len(b.elements[-1].shape), 5)
+#         
+#     def test_7j(self):
+#         print("sevenj")
+#         image = cv.imread("unittests/sevenj.png")
+#         
+#         b = read.readBoard(image, data.FSSE)
+#         
+#         self.assertEqual(4, b.width)
+#         self.assertEqual(4, b.height)
+#         
+#         for elt in b.elements:
+#             if elt.type == "tetris":
+#                 print(elt.shape)
+#             if elt.type == "square":
+#                 self.assertTrue(False)
+#         self.assertTrue(b.solve())
+#         print(b)
+#         
+#         self.assertEqual(len(b.elements), 12)
+#         self.assertEqual(len(b.elements[-3].shape), 3)
+#         self.assertEqual(len(b.elements[-2].shape), 3)
+#                 
+#     def test_7k(self):
+#         print("sevenk")
+#         image = cv.imread("unittests/sevenk.png")
+#         
+#         b = read.readBoard(image, data.FSSE)
+#         
+#         self.assertEqual(4, b.width)
+#         self.assertEqual(4, b.height)
+#         
+#         for elt in b.elements:
+#             if elt.type == "tetris":
+#                 print(elt.shape)
+#             if elt.type == "square":
+#                 self.assertTrue(False)
+#         self.assertTrue(b.solve())
+#         print(b)
+#         
+#         self.assertEqual(len(b.elements), 11)
+#         self.assertEqual(len(b.elements[-3].shape), 3)
+#         self.assertEqual(len(b.elements[-4].shape), 3)
+#                 
+#     def test_7l(self):
+#         print("sevenl")
+#         image = cv.imread("unittests/sevenl.png")
+#         
+#         b = read.readBoard(image, data.FSSE)
+#         
+#         self.assertEqual(4, b.width)
+#         self.assertEqual(4, b.height)
+#         
+#         for elt in b.elements:
+#             if elt.type == "tetris":
+#                 print(elt.shape)
+#             if elt.type == "square":
+#                 self.assertTrue(False)
+#         self.assertTrue(b.solve())
+#         print(b)
+#         
+#         self.assertEqual(len(b.elements), 10)
+#         self.assertEqual(len(b.elements[-2].shape), 3)
+#         self.assertEqual(len(b.elements[-4].shape), 4)
+#                 
+#     def test_7m(self):
+#         print("sevenm")
+#         image = cv.imread("unittests/sevenm.png")
+#         
+#         b = read.readBoard(image, data.FSSE)
+#         
+#         self.assertEqual(4, b.width)
+#         self.assertEqual(4, b.height)
+#         
+#         for elt in b.elements:
+#             if elt.type == "tetris":
+#                 print(elt.shape)
+#             if elt.type == "square":
+#                 self.assertTrue(False)
+#         self.assertTrue(b.solve())
+#         print(b)
+#         
+#         self.assertEqual(len(b.elements), 12)
+#         self.assertEqual(len(b.elements[-1].shape), 5)
+#         self.assertEqual(len(b.elements[-3].shape), 5)
+#                 
+#     def test_7n(self):
+#         print("sevenn")
+#         image = cv.imread("unittests/sevenn.png")
+#         
+#         b = read.readBoard(image, data.FSSE)
+#         
+#         self.assertEqual(4, b.width)
+#         self.assertEqual(4, b.height)
+#         
+#         for elt in b.elements:
+#             if elt.type == "tetris":
+#                 print(elt.shape)
+#             if elt.type == "square":
+#                 self.assertTrue(False)
+#         self.assertTrue(b.solve())
+#         print(b)
+#         
+#         self.assertEqual(len(b.elements), 12)
+#         self.assertEqual(len(b.elements[-4].shape), 4)
+#         self.assertEqual(len(b.elements[-1].shape), 3)
+#                 
+#     def test_7o(self):
+#         print("seveno")
+#         image = cv.imread("unittests/seveno.png")
+#         
+#         b = read.readBoard(image, data.FSSE)
+#         
+#         self.assertEqual(4, b.width)
+#         self.assertEqual(4, b.height)
+#         
+#         for elt in b.elements:
+#             if elt.type == "tetris":
+#                 print(elt.shape)
+#             if elt.type == "square":
+#                 self.assertTrue(False)
+#         self.assertTrue(b.solve())
+#         print(b)
+#         
+#         self.assertEqual(len(b.elements), 10)
+#         self.assertEqual(len(b.elements[-3].shape), 3)
+#         self.assertEqual(len(b.elements[-4].shape), 3)
+# =============================================================================
 
 # =============================================================================
 #     def test_8(self):
