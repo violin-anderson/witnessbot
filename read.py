@@ -6,6 +6,7 @@ from matplotlib import pyplot as plt
 from matplotlib import colors
 from skimage import segmentation
 from skimage import feature
+from scipy.ndimage import measurements
 import board, elements
 
 DEBUG = 0
@@ -13,7 +14,7 @@ DEBUG = 0
 BASETHRESHOLD = 40
 BLACKTHRESHOLD = 20
 BOARDERTHRESHOLD = 30
-STARTHRESH = 0.6
+STARTHRESH = 0.75
 SQUARETHRESH = 0.75
 HEXTHRESH = 15
 
@@ -59,6 +60,8 @@ def get_linemap(image, boardData):
     #image = cv.cvtColor(image, cv.COLOR_BGR2HSV)
     if boardData.name == "four":
         findline = segmentation.flood(image, boardData.startcoords, tolerance=40)
+    elif boardData.name == "eleven":
+        findline = segmentation.flood(image[:,:,2], boardData.startcoords, tolerance=10)
     else:
         image = cv.cvtColor(image, cv.COLOR_BGR2Lab)
         findline = segmentation.flood(image[:,:,1], boardData.startcoords, tolerance=10)
@@ -241,7 +244,8 @@ def map_tetris(locsquare, currloc, currxy, foundxy):
     return foundxy
 
 def get_cell_objects(vert_centers, horiz_centers, frame, boardData):
-    if not (boardData.stars or boardData.squares or boardData.colorsquares) or len(vert_centers) != 5 or len(horiz_centers) != 5:
+    if not (boardData.stars or boardData.squares or boardData.colorsquares or boardData.triangles) or\
+        len(vert_centers) != 5 or len(horiz_centers) != 5:
         return []
     
     elts = []
@@ -256,23 +260,41 @@ def get_cell_objects(vert_centers, horiz_centers, frame, boardData):
     for x in range(len(horiz_centers)-1):
         for y in range(len(vert_centers)-1):
             square = frame[horiz_centers[y]+6:horiz_centers[y+1]-6, vert_centers[x]+6:vert_centers[x+1]-6]
-            tolerance = 16
-            if boardData.squares:
-                tolerance = 25
-            if boardData.colorsquares:
-                important = square[:,:,2]
+            if boardData.triangles:
+                important = (square[:,:,2] == 255) * 255
             else:
-                important = square[:,:,0]
-            if square[important.shape[0]//2, important.shape[1]//2, 2] > 100:
-                important = segmentation.flood_fill(important, (important.shape[0]//2, important.shape[1]//2), 0, tolerance=1)
-            
-            delta = important.shape[0]//8
-            for start in [(delta, delta), (important.shape[0]-delta, delta), (delta, important.shape[1]-delta), (important.shape[0]-delta, important.shape[1]-delta)]:
-                important = segmentation.flood_fill(important, start, 255, tolerance=tolerance)
-            important = (important == 255) * 255
+                tolerance = 16
+                if boardData.squares:
+                    tolerance = 25
+                
+                if boardData.colorsquares:
+                    important = square[:,:,2]
+                else:
+                    important = square[:,:,0]
+                
+                # Shade in centers
+                if not boardData.triangles and square[important.shape[0]//2, important.shape[1]//2, 2] > 100:
+                    important = segmentation.flood_fill(important, (important.shape[0]//2, important.shape[1]//2), 0, tolerance=1)
+                
+                # Shade out edges
+                delta = important.shape[0]//8
+                for start in [(delta, delta), (important.shape[0]-delta, delta), (delta, important.shape[1]-delta), (important.shape[0]-delta, important.shape[1]-delta)]:
+                    important = segmentation.flood_fill(important, start, 255, tolerance=tolerance)
+                important = (important == 255) * 255
             
             if DEBUG >= 2:
                 plt.subplot(4, 4, x+1 + y*4),plt.imshow(important, norm=colors.Normalize(0, 255))
+            
+            if boardData.triangles:
+                labels = measurements.label(important)[0]
+                
+                count = np.max(labels)
+                if count > 0:
+                    for i in range(1, count+1):
+                        if np.count_nonzero(labels == i) < 20:
+                            count -= 1
+                    elts.append(elements.Triangle(x, y, count))
+                continue
             
             if boardData.colorsquares:
                 if important[important.shape[0]//2, important.shape[1]//2] == 255:
@@ -361,7 +383,7 @@ def readBoard(image, boardData):
     
     elts = []
     
-    if not boardData.colorsquares:
+    if not boardData.colorsquares and not boardData.triangles:
         elts.extend(get_blocks(vert_centers, horiz_centers, linemap))
     
     if boardData.edgeHexes:

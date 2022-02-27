@@ -179,6 +179,15 @@ def validateGroups(groups, dims, cornermap):
         if mistakes > nulls:
             return False
         
+        triangles = list(filter(lambda e: e.type == "triangle", elements))
+        for tri in triangles:
+            adj = len(list(filter(lambda c: c[1][0].to == c[1][1] or c[1][1].to == c[1][0], tri.cell.connections)))
+            if adj != tri.count:
+                mistakes += 1
+    
+        if mistakes > nulls:
+            return False
+        
         squares = [e.color for e in filter(lambda e: e.type == "square", elements)]
         if not all([s == squares[0] for s in squares]):
             # ToDo: Handle case where the majority should be nulled (unlikely to be an issue)
@@ -340,8 +349,9 @@ class Board():
                 e.c2 = cornermap[e.y2][e.x2]
                 cornermap[e.y][e.x].elements.append(e)
                 cornermap[e.y2][e.x2].elements.append(e)
-            elif e.type in ["square", "star", "null", "tetris"]:
+            elif e.type in ["square", "star", "null", "tetris", "triangle"]:
                 cellmap[e.y][e.x].element = e
+                e.cell = cellmap[e.y][e.x]
         
         #flatCorners = [c for r in cornermap for c in r]
         flatCells = [c for r in cellmap for c in r]
@@ -382,3 +392,11 @@ class Board():
             [c.restore() for r in cornermap for c in r]
             return True
         return False
+
+if __name__ == "__main__":
+    elts = [boardElements.Triangle(0, 0, 1), boardElements.Triangle(0, 2, 1), boardElements.Triangle(1, 2, 1),
+            boardElements.Triangle(2, 0, 1), boardElements.Triangle(3, 0, 1), boardElements.Triangle(2, 1, 1),
+            boardElements.Triangle(3, 2, 1), boardElements.Triangle(2, 3, 2)]
+    b = Board([0]*5, [0]*5, elts, [(0, 4)], [(4, 0)])
+    print(b.solve())
+    print(b)

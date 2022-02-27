@@ -4,7 +4,7 @@ class boardData:
     def __init__(self, name, region, startcoords, clickedsens,
                  bordercoords=None, blurshape=(5,2), linethresh=15,
                  squares=False, stars=False, hexes=False, edgeHexes=False,
-                 colorsquares=False):
+                 colorsquares=False, triangles=False):
         self.name = name
         self.region = region
         self.startcoords = (startcoords[0] - region[1], startcoords[1] - region[0])
@@ -19,6 +19,7 @@ class boardData:
         self.hexes = hexes
         self.edgeHexes = edgeHexes
         self.colorsquares = colorsquares
+        self.triangles = triangles
 
 ONE = boardData("one", (715, 295, 1190, 755), (750, 750), 1.2, blurshape=(6,2))
 
@@ -33,3 +34,5 @@ FSSE = boardData("fsse", (770, 350, 1145, 725), (695, 805), [2, 1.1, 1.7], stars
 NINE = boardData("nine", (0, 0, 200, 200), (180, 20), [1.12, 1.12, 1.12], squares=True) 
 
 TEN = boardData("ten", (0, 0, 200, 200), (180, 20), [1.12, 1.12, 1.12], colorsquares=True) 
+
+ELEVEN = boardData("eleven", (0, 0, 600, 600), (550, 50), 1.12, blurshape=(6,2), triangles=True)

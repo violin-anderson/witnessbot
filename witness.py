@@ -639,38 +639,45 @@ def walkToNine(current, gui):
         time.sleep(0.6)
         guilib.keyUp('w')
 
-def resize(image, x, y, x2, y2):
+def resize(image, x, y, x2, y2, eleven=False):
     image = image[y:y2,x:x2]
-    board = (image[:,:,1] > 90) & (image[:,:,2] < 40)
+    if eleven:
+        board = (image[:,:,2] > 120)
+    else:
+        board = (image[:,:,1] > 90) & (image[:,:,2] < 40)
     if DEBUG:
         plt.imshow(board)
         plt.show()
     locs = np.argwhere(board)[:,::-1]
     
-# =============================================================================
-#     maxx = np.max(locs[:,0])
-#     minx = np.min(locs[:,0])
-#     maxy = np.max(locs[:,1])
-#     miny = np.min(locs[:,1])
-#     tl = [minx, miny]
-#     br = [maxx, maxy]
-#     bl = [minx, maxy]
-#     tr = [maxx, miny]
-# =============================================================================
-
-    summed = locs[:,0] + locs[:,1]
-    tl = locs[np.argmin(summed)]
-    br = locs[np.argmax(summed)]
-    summed = locs[:,0] - locs[:,1]
-    bl = locs[np.argmin(summed)]
-    tr = locs[np.argmax(summed)]
+    if eleven:
+        maxx = np.max(locs[:,0])
+        minx = np.min(locs[:,0])
+        maxy = np.max(locs[:,1])
+        miny = np.min(locs[:,1])
+        tl = [minx, miny]
+        br = [maxx, maxy]
+        bl = [minx, maxy]
+        tr = [maxx, miny]
+    else:
+        summed = locs[:,0] + locs[:,1]
+        tl = locs[np.argmin(summed)]
+        br = locs[np.argmax(summed)]
+        summed = locs[:,0] - locs[:,1]
+        bl = locs[np.argmin(summed)]
+        tr = locs[np.argmax(summed)]
     
     src = np.array([tr, br, tl, bl])
     dest = np.array([[200, 0], [200, 200], [0, 0], [0, 200]])
+    if eleven:
+        dest *= 3
     
     warpfn = transform.ProjectiveTransform()
     warpfn.estimate(dest, src)
-    image = transform.warp(image, warpfn, output_shape=(200, 200))
+    output_shape=(200, 200)
+    if eleven:
+        output_shape=(600, 600)
+    image = transform.warp(image, warpfn, output_shape=output_shape)
     image = (image*255).astype(np.uint8)
     if DEBUG >= 1:
         plt.imshow(image)
@@ -770,17 +777,116 @@ def solveTen(gui):
     gui.click()
     gui.startstop_solve()
 
-def waitForCross(movingLeft):
+def waitForCross(movingLeft, current, gui):
+    # Solve a puzzle if there is one to solve
+    edgehex = list(filter(lambda e: e.type == 'edgehex' and
+                          ((e.c1 == current and e.c2 == current.to) or
+                          (e.c2 == current and e.c1 == current.to)),
+                          current.elements))
+    if len(edgehex) > 0:
+        if movingLeft:
+            guilib.keyUp('a')
+        else:
+            guilib.keyUp('d')
+        gui.moveBy(0, -600)
+        backwards = False
+        time.sleep(0.5)
+        
+        if not np.any(get_screenshot()[200:500,:,2] > 120):
+            gui.moveBy(-2600, 0)
+            backwards = True
+            
+            if not np.any(get_screenshot()[200:500,:,2] > 120):
+                gui.moveBy(2600, 0)
+                backwards = False
+                if movingLeft:
+                    guilib.keyDown('a')
+                else:
+                    guilib.keyDown('d')
+                time.sleep(0.2)
+                if movingLeft:
+                    guilib.keyUp('a')
+                else:
+                    guilib.keyUp('d')
+                time.sleep(0.2)
+                
+                if not np.any(get_screenshot()[200:500,:,2] > 120):
+                    gui.moveBy(-2600, 0)
+                    backwards = True
+        
+        # Make sure the board is fully visible
+        orange = np.argwhere(get_screenshot()[200:500,:,2] > 120)
+        assert(len(orange) > 0)
+        avg = np.average(orange[:,1])
+        
+        tempMovingLeft = avg < 960
+        guilib.keyUp('shift')
+        if tempMovingLeft:
+            guilib.keyDown('a')
+        else:
+            guilib.keyDown('d')
+        
+        startTime = time.time()
+        while len(orange) == 0 or (tempMovingLeft and (avg < 700)) or ((not tempMovingLeft) and (avg > 1220)):
+            orange = np.argwhere(get_screenshot()[200:500,:,2] > 120)
+            avg = np.average(orange[:,1])
+            if time.time() - startTime > 3:
+                raise TimeoutError()
+        
+        guilib.keyDown('shift')
+        if tempMovingLeft:
+            guilib.keyUp('a')
+        else:
+            guilib.keyUp('d')
+        time.sleep(0.3)
+        img = get_screenshot()
+        cv.imwrite("eleven.png", img)
+        
+        # Solve board
+        gui.startstop_solve()
+        warped, warpfn = resize(img, 0, 0, 1920, 1080, eleven=True)
+        b = read.readBoard(warped, data.ELEVEN)
+        gui.clickedsens = data.ELEVEN.clickedsens
+        assert(b.solve())
+        print(b)
+        
+        coords = b.getSlnCoords()
+        
+        gui.moveTo(warpfn(coords[0])[0][0], warpfn(coords[0])[0][1])
+        gui.click()
+        
+        for c in coords[1:]:
+            gui.moveTo(warpfn(c)[0][0], warpfn(c)[0][1])
+        gui.click()
+        
+        gui.startstop_solve()
+        
+        if backwards:
+            gui.moveBy(2600, 1000)
+        else:
+            gui.moveBy(0, 1000)
+        
+        if movingLeft:
+            guilib.keyDown('a')
+        else:
+            guilib.keyDown('d')
+    
     # Wait until no orange visible
-    orange = np.argwhere(get_screenshot()[250:750,550:1370,2] > 150)
+    startTime = time.time()
+    orange = np.argwhere(get_screenshot()[300:730,550:1370,2] > 150)
     while len(orange) != 0:
-        orange = np.argwhere(get_screenshot()[250:750,550:1370,2] > 150)
+        orange = np.argwhere(get_screenshot()[300:730,550:1370,2] > 150)
+        if time.time() - startTime > 3:
+            raise TimeoutError()
+    time.sleep(0.02)
     
     # Wait until in the center of a block
     avg = np.average(orange[:,1])
     while len(orange) == 0 or (movingLeft and (avg < 960-550)) or ((not movingLeft) and (avg > 960-550)):
-        orange = np.argwhere(get_screenshot()[250:750,550:1370,2] > 150)
+        orange = np.argwhere(get_screenshot()[300:730,550:1370,2] > 150)
         avg = np.average(orange[:,1])
+        if time.time() - startTime > 3:
+            raise TimeoutError()
 
 def doPuzzle(gui, board):
     gui.moveBy(1400, 0)
@@ -805,10 +911,10 @@ def doPuzzle(gui, board):
         gui.moveBy(-640, 0)
         movingLeft = False
         guilib.keyDown('d')
-    current = current.to
+    waitForCross(movingLeft, current, gui)
     
-    while current.to is not None:
-        waitForCross(movingLeft)
+    while current.to.to is not None:
+        current = current.to
         
         newfacing = (current.to.x - current.x, current.to.y - current.y)
         if facing != newfacing:
@@ -816,7 +922,6 @@ def doPuzzle(gui, board):
                 gui.moveBy(-1300*facing[1]*newfacing[0], 0)
             else:
                 gui.moveBy(1300*facing[0]*newfacing[1], 0)
-        current = current.to
         facing = newfacing
         
         # Figure out if we need to face the other direction
@@ -835,20 +940,22 @@ def doPuzzle(gui, board):
                 guilib.keyDown('a')
             movingLeft = not movingLeft
         
-    waitForCross(movingLeft)
-    guilib.keyUp('a')
-    guilib.keyUp('d')
+        waitForCross(movingLeft, current, gui)
+    
+    if movingLeft:
+        guilib.keyUp('a')
+    else:
+        guilib.keyUp('d')
     if movingLeft:
         gui.moveBy(-2000, -600)
     else:
         gui.moveBy(2000, -600)
-    guilib.keyDown('w')
-    guilib.keyUp('w')
 
 def main():
     escape = cv.imread('images/escape.png')
     music = cv.imread('images/record.png')
     music2 = cv.imread('images/recordc.png')
+    returnImg = cv.imread('images/return.png')
     
     time.sleep(3)
     
@@ -956,6 +1063,8 @@ def main():
             
             # Walk to the start from Ten
             print("Recovering from failure")
+            guilib.keyUp('shift')
+            guilib.keyDown('shift')
             guilib.keyDown('w')
             time.sleep(0.5)
             guilib.keyUp('w')
@@ -985,6 +1094,7 @@ def main():
             time.sleep(0.5)
             guilib.press('escape')
             time.sleep(2)
+            continue
         
         walkToNine(current, gui)
         
@@ -1015,34 +1125,63 @@ def main():
         
         solveTen(gui)
         
-# =============================================================================
-#         image, _ = warpBoard4(cv.imread("unittests/fourc.png"))
-#         fourBoard = read.readBoard(image, data.FOUR)
-#         fourBoard.solve(optimal=True)
-# =============================================================================
-        
         doPuzzle(gui, fourBoard)
-
-        guilib.keyUp('shift')
-        raise Exception('NYI')
         
-        # Walk to the start from Ten
         guilib.keyDown('w')
-        time.sleep(0.7)
+        time.sleep(0.5)
+        gui.moveBy(1200, 0)
+        time.sleep(0.25)
         guilib.keyUp('w')
         gui.startstop_solve()
+        gui.startstop_solve()
+        gui.startstop_solve()
+        time.sleep(0.5)
+        image = get_screenshot()
+        assert(np.any(image[:,:,2] > 180))
+        gui.startstop_solve()
+        
+        # Walk from twelve to ten
+        gui.moveBy(2600, 0)
+        image = get_screenshot()
+        image = (image[:,:,0] < 30) & (image[:,:,2] > 180)
+        locs = np.argwhere(image)
+        gui.moveTo(np.average(locs[:,1]))
+        
+        guilib.press('escape')
+        time.sleep(0.5)
+        guilib.press('escape')
+        
+        guilib.keyDown('w')
+        time.sleep(0.6)
+        gui.moveBy(-1300, 0)
+        time.sleep(0.6)
+        gui.moveBy(600, 0)
+        time.sleep(3)
+        gui.moveBy(-1300, 0)
+        time.sleep(2.5)
+        gui.moveBy(500, 0)
+        time.sleep(1.5)
+        
+        guilib.keyUp('w')
+        guilib.keyDown('a')
+        time.sleep(2)
+        guilib.keyUp('a')
+        gui.moveBy(600, 0)
+        maxloc = findimage(returnImg)
+        gui.moveTo(maxloc[0] + 200)
+        guilib.keyDown('w')
+        time.sleep(0.8)
+        gui.moveBy(1350, 0)
+        time.sleep(0.3)
+        gui.startstop_solve()
+        guilib.keyUp('w')
         time.sleep(1)
+        
+        # Walk to the start from Ten
         gui.startstop_solve()
         gui.moveBy(-2700, 0)
         guilib.keyDown('w')
-        guilib.keyDown('d')
-        time.sleep(0.4)
-        guilib.keyUp('d')
-        time.sleep(0.7)
-        guilib.keyDown('a')
-        time.sleep(0.15)
-        guilib.keyUp('a')
-        time.sleep(1)
+        time.sleep(1.2)
         gui.moveBy(800, 0)
         time.sleep(0.4)
         gui.moveBy(1100, 0)

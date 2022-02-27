@@ -4,7 +4,7 @@ import unittest
 import read, data, witness
 import cv2 as cv
 
-read.DEBUG = 0
+read.DEBUG = 3
 witness.DEBUG = 0
 
 class TestBoardReading(unittest.TestCase):
@@ -217,122 +217,124 @@ class TestBoardReading(unittest.TestCase):
 #         self.assertEqual(len(b.elements), 13)
 # =============================================================================
 
-    def test_4(self):
-        print("four")
-        image = cv.imread("unittests/four.png")
-        image, _ = witness.warpBoard4(image)
-        
-        b = read.readBoard(image, data.FOUR)
-        
-        self.assertEqual(5, b.width)
-        self.assertEqual(5, b.height)
-        self.assertTrue(b.solve(optimal=True))
-        print(b)
-        self.assertEqual(len(b.elements), 18)
-        
-    def test_4b(self):
-        print("fourb")
-        image = cv.imread("unittests/fourb.png")
-        image, _ = witness.warpBoard4(image)
-        
-        b = read.readBoard(image, data.FOUR)
-        
-        self.assertEqual(5, b.width)
-        self.assertEqual(5, b.height)
-        self.assertTrue(b.solve(optimal=True))
-        print(b)
-        self.assertEqual(len(b.elements), 20)
-        
-    def test_4c(self):
-        print("fourc")
-        image = cv.imread("unittests/fourc.png")
-        image, _ = witness.warpBoard4(image)
-        
-        b = read.readBoard(image, data.FOUR)
-        
-        self.assertEqual(5, b.width)
-        self.assertEqual(5, b.height)
-        self.assertTrue(b.solve(optimal=True))
-        print(b)
-        self.assertEqual(len(b.elements), 23)
-        
-    def test_4d(self):
-        print("fourd")
-        image = cv.imread("unittests/fourd.png")
-        image, _ = witness.warpBoard4(image)
-        
-        b = read.readBoard(image, data.FOUR)
-        
-        self.assertEqual(5, b.width)
-        self.assertEqual(5, b.height)
-        self.assertTrue(b.solve(optimal=True))
-        print(b)
-        self.assertEqual(len(b.elements), 23)
-        
-    def test_4e(self):
-        print("foure")
-        image = cv.imread("unittests/foure.png")
-        image, _ = witness.warpBoard4(image)
-        
-        b = read.readBoard(image, data.FOUR)
-        
-        self.assertEqual(5, b.width)
-        self.assertEqual(5, b.height)
-        self.assertTrue(b.solve(optimal=True))
-        print(b)
-        self.assertEqual(len(b.elements), 25)
-        
-    def test_4f(self):
-        print("fourf")
-        image = cv.imread("unittests/fourf.png")
-        image, _ = witness.warpBoard4(image)
-        
-        b = read.readBoard(image, data.FOUR)
-        
-        self.assertEqual(5, b.width)
-        self.assertEqual(5, b.height)
-        self.assertTrue(b.solve(optimal=True))
-        print(b)
-        self.assertEqual(len(b.elements), 26)
-                
-    def test_4g(self):
-        print("fourg")
-        image = cv.imread("unittests/fourg.png")
-        image, _ = witness.warpBoard4(image)
-        
-        b = read.readBoard(image, data.FOUR)
-        
-        self.assertEqual(5, b.width)
-        self.assertEqual(5, b.height)
-        self.assertTrue(b.solve(optimal=True))
-        print(b)
-        self.assertEqual(len(b.elements), 26)
-                
-    def test_4h(self):
-        print("fourh")
-        image = cv.imread("unittests/fourh.png")
-        image, _ = witness.warpBoard4(image)
-        
-        b = read.readBoard(image, data.FOUR)
-        
-        self.assertEqual(5, b.width)
-        self.assertEqual(5, b.height)
-        self.assertTrue(b.solve(optimal=True))
-        print(b)
-        self.assertEqual(len(b.elements), 24)
-                
-    def test_4i(self):
-        print("fouri")
-        image = cv.imread("unittests/fouri.png")
-        image, _ = witness.warpBoard4(image)
-        
-        b = read.readBoard(image, data.FOUR)
-        
-        self.assertEqual(5, b.width)
-        self.assertEqual(5, b.height)
-        self.assertTrue(b.solve(optimal=True))
-        print(b)
-        self.assertEqual(len(b.elements), 25)
+# =============================================================================
+#     def test_4(self):
+#         print("four")
+#         image = cv.imread("unittests/four.png")
+#         image, _ = witness.warpBoard4(image)
+#         
+#         b = read.readBoard(image, data.FOUR)
+#         
+#         self.assertEqual(5, b.width)
+#         self.assertEqual(5, b.height)
+#         self.assertTrue(b.solve(optimal=True))
+#         print(b)
+#         self.assertEqual(len(b.elements), 18)
+#         
+#     def test_4b(self):
+#         print("fourb")
+#         image = cv.imread("unittests/fourb.png")
+#         image, _ = witness.warpBoard4(image)
+#         
+#         b = read.readBoard(image, data.FOUR)
+#         
+#         self.assertEqual(5, b.width)
+#         self.assertEqual(5, b.height)
+#         self.assertTrue(b.solve(optimal=True))
+#         print(b)
+#         self.assertEqual(len(b.elements), 20)
+#         
+#     def test_4c(self):
+#         print("fourc")
+#         image = cv.imread("unittests/fourc.png")
+#         image, _ = witness.warpBoard4(image)
+#         
+#         b = read.readBoard(image, data.FOUR)
+#         
+#         self.assertEqual(5, b.width)
+#         self.assertEqual(5, b.height)
+#         self.assertTrue(b.solve(optimal=True))
+#         print(b)
+#         self.assertEqual(len(b.elements), 23)
+#         
+#     def test_4d(self):
+#         print("fourd")
+#         image = cv.imread("unittests/fourd.png")
+#         image, _ = witness.warpBoard4(image)
+#         
+#         b = read.readBoard(image, data.FOUR)
+#         
+#         self.assertEqual(5, b.width)
+#         self.assertEqual(5, b.height)
+#         self.assertTrue(b.solve(optimal=True))
+#         print(b)
+#         self.assertEqual(len(b.elements), 23)
+#         
+#     def test_4e(self):
+#         print("foure")
+#         image = cv.imread("unittests/foure.png")
+#         image, _ = witness.warpBoard4(image)
+#         
+#         b = read.readBoard(image, data.FOUR)
+#         
+#         self.assertEqual(5, b.width)
+#         self.assertEqual(5, b.height)
+#         self.assertTrue(b.solve(optimal=True))
+#         print(b)
+#         self.assertEqual(len(b.elements), 25)
+#         
+#     def test_4f(self):
+#         print("fourf")
+#         image = cv.imread("unittests/fourf.png")
+#         image, _ = witness.warpBoard4(image)
+#         
+#         b = read.readBoard(image, data.FOUR)
+#         
+#         self.assertEqual(5, b.width)
+#         self.assertEqual(5, b.height)
+#         self.assertTrue(b.solve(optimal=True))
+#         print(b)
+#         self.assertEqual(len(b.elements), 26)
+#                 
+#     def test_4g(self):
+#         print("fourg")
+#         image = cv.imread("unittests/fourg.png")
+#         image, _ = witness.warpBoard4(image)
+#         
+#         b = read.readBoard(image, data.FOUR)
+#         
+#         self.assertEqual(5, b.width)
+#         self.assertEqual(5, b.height)
+#         self.assertTrue(b.solve(optimal=True))
+#         print(b)
+#         self.assertEqual(len(b.elements), 26)
+#                 
+#     def test_4h(self):
+#         print("fourh")
+#         image = cv.imread("unittests/fourh.png")
+#         image, _ = witness.warpBoard4(image)
+#         
+#         b = read.readBoard(image, data.FOUR)
+#         
+#         self.assertEqual(5, b.width)
+#         self.assertEqual(5, b.height)
+#         self.assertTrue(b.solve(optimal=True))
+#         print(b)
+#         self.assertEqual(len(b.elements), 24)
+#                 
+#     def test_4i(self):
+#         print("fouri")
+#         image = cv.imread("unittests/fouri.png")
+#         image, _ = witness.warpBoard4(image)
+#         
+#         b = read.readBoard(image, data.FOUR)
+#         
+#         self.assertEqual(5, b.width)
+#         self.assertEqual(5, b.height)
+#         self.assertTrue(b.solve(optimal=True))
+#         print(b)
+#         self.assertEqual(len(b.elements), 25)
+# =============================================================================
 
 # =============================================================================
 #     def test_5(self):
@@ -406,8 +408,6 @@ class TestBoardReading(unittest.TestCase):
 #         self.assertTrue(b.solve())
 #         print(b)
 #         self.assertEqual(len(b.elements), 37)
-# =============================================================================
-# =============================================================================
 # 
 # # =============================================================================
 # # def test_5c(self):
@@ -519,8 +519,8 @@ class TestBoardReading(unittest.TestCase):
 #         self.assertTrue(b.solve())
 #         print(b)
 #         self.assertEqual(len(b.elements), 14)
-#     
 # =============================================================================
+    
 # =============================================================================
 #     def test_7(self):
 #         print("seven")
@@ -837,8 +837,29 @@ class TestBoardReading(unittest.TestCase):
 #         self.assertEqual(len(b.elements[-3].shape), 3)
 #         self.assertEqual(len(b.elements[-4].shape), 3)
 # =============================================================================
-
+                        
+    def test_7p(self):
+        print("sevenp")
+        image = cv.imread("unittests/sevenp.png")
+        
+        b = read.readBoard(image, data.FSSE)
+        
+        self.assertEqual(4, b.width)
+        self.assertEqual(4, b.height)
+        
+        for elt in b.elements:
+            if elt.type == "tetris":
+                print(elt.shape)
+            if elt.type == "square":
+                self.assertTrue(False)
+        self.assertTrue(b.solve())
+        print(b)
+        
+        self.assertEqual(len(b.elements), 9)
+        self.assertEqual(len(b.elements[-2].shape), 4)
+        self.assertEqual(len(b.elements[-4].shape), 5)
 # =============================================================================
+# 
 #     def test_8(self):
 #         print("eight")
 #         image = cv.imread("unittests/eight.png")
@@ -922,8 +943,6 @@ class TestBoardReading(unittest.TestCase):
 #         self.assertEqual(len(b.elements), 12)
 #         self.assertEqual(len(list(filter(lambda e: e.type == "hex" and e.color == 'o', b.elements))), 2)
 #         self.assertEqual(len(list(filter(lambda e: e.type == "hex" and e.color == 'c', b.elements))), 2)
-# =============================================================================
-# =============================================================================
 # 
 #     def test_9(self):
 #         print("nine")
@@ -947,6 +966,7 @@ class TestBoardReading(unittest.TestCase):
 #         self.assertEqual(4, b.width)
 #         self.assertEqual(4, b.height)
 #         self.assertTrue(b.solve())
+#         print(b)
 #         self.assertEqual(len(b.elements), 12)
 #     
 #     def test_9b2(self):
@@ -983,6 +1003,7 @@ class TestBoardReading(unittest.TestCase):
 #         self.assertEqual(4, b.width)
 #         self.assertEqual(4, b.height)
 #         self.assertTrue(b.solve())
+#         print(b)
 #         self.assertEqual(len(b.elements), 12)
 #     
 #     def test_9c2(self):
@@ -1044,7 +1065,112 @@ class TestBoardReading(unittest.TestCase):
 #         self.assertEqual(4, b.width)
 #         self.assertEqual(4, b.height)
 #         self.assertTrue(b.solve())
+#         print(b)
 #         self.assertEqual(len(b.elements), 9)
+# =============================================================================
+
+# =============================================================================
+#     def test_11(self):
+#         print("eleven")
+#         image = cv.imread("unittests/eleven.png")
+#         image, _ = witness.resize(image, 0, 0, 1920, 1080, eleven=True)
+#         
+#         b = read.readBoard(image, data.ELEVEN)
+#         
+#         self.assertEqual(4, b.width)
+#         self.assertEqual(4, b.height)
+#         self.assertEqual(len(b.elements), 8)
+#         self.assertEqual(sum(map(lambda e: e.count, b.elements)), 9)
+#         self.assertTrue(b.solve())
+#         print(b)
+# 
+#     def test_11b(self):
+#         print("elevenb")
+#         image = cv.imread("unittests/elevenb.png")
+#         image, _ = witness.resize(image, 0, 0, 1920, 1080, eleven=True)
+#         
+#         b = read.readBoard(image, data.ELEVEN)
+#         
+#         self.assertEqual(4, b.width)
+#         self.assertEqual(4, b.height)
+#         self.assertEqual(len(b.elements), 6)
+#         self.assertEqual(sum(map(lambda e: e.count, b.elements)), 8)
+#         self.assertTrue(b.solve())
+#         print(b)
+# 
+#     def test_11c(self):
+#         print("elevenc")
+#         image = cv.imread("unittests/elevenc.png")
+#         image, _ = witness.resize(image, 0, 0, 1920, 1080, eleven=True)
+#         
+#         b = read.readBoard(image, data.ELEVEN)
+#         
+#         self.assertEqual(4, b.width)
+#         self.assertEqual(4, b.height)
+#         self.assertEqual(len(b.elements), 8)
+#         self.assertEqual(sum(map(lambda e: e.count, b.elements)), 12)
+#         self.assertTrue(b.solve())
+#         print(b)
+# 
+#     def test_11d(self):
+#         print("elevend")
+#         image = cv.imread("unittests/elevend.png")
+#         image, _ = witness.resize(image, 0, 0, 1920, 1080, eleven=True)
+#         
+#         b = read.readBoard(image, data.ELEVEN)
+#         
+#         self.assertEqual(4, b.width)
+#         self.assertEqual(4, b.height)
+#         self.assertEqual(len(b.elements), 6)
+#         self.assertEqual(sum(map(lambda e: e.count, b.elements)), 10)
+#         self.assertTrue(b.solve())
+#         print(b)
+# 
+#     def test_11e(self):
+#         print("elevene")
+#         image = cv.imread("unittests/elevene.png")
+#         image, _ = witness.resize(image, 0, 0, 1920, 1080, eleven=True)
+#         
+#         b = read.readBoard(image, data.ELEVEN)
+#         
+#         self.assertEqual(4, b.width)
+#         self.assertEqual(4, b.height)
+#         self.assertEqual(len(b.elements), 6)
+#         self.assertEqual(sum(map(lambda e: e.count, b.elements)), 9)
+#         self.assertTrue(b.solve())
+#         print(b)
+# =============================================================================
+
+# =============================================================================
+#     def test_11f(self):
+#         print("elevenf")
+#         image = cv.imread("unittests/elevenf.png")
+#         image, _ = witness.resize(image, 0, 0, 1920, 1080, eleven=True)
+#         
+#         b = read.readBoard(image, data.ELEVEN)
+#         
+#         self.assertEqual(4, b.width)
+#         self.assertEqual(4, b.height)
+#         self.assertEqual(len(b.elements), 6)
+#         self.assertEqual(sum(map(lambda e: e.count, b.elements)), 13)
+#         self.assertTrue(b.solve())
+#         print(b)
+# =============================================================================
+
+# =============================================================================
+#     def test_11g(self):
+#         print("eleveng")
+#         image = cv.imread("unittests/eleveng.png")
+#         image, _ = witness.resize(image, 0, 0, 1920, 1080, eleven=True)
+#         
+#         b = read.readBoard(image, data.ELEVEN)
+#         
+#         self.assertEqual(4, b.width)
+#         self.assertEqual(4, b.height)
+#         self.assertEqual(len(b.elements), 6)
+#         self.assertEqual(sum(map(lambda e: e.count, b.elements)), 14)
+#         self.assertTrue(b.solve())
+#         print(b)
 # =============================================================================
 
 if __name__ == '__main__':

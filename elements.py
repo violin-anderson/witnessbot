@@ -75,3 +75,11 @@ class Tetris(Element):
         self.rotating = rotating
         self.negative = negative
         super().__init__(x, y)
+
+class Triangle(Element):
+    def __init__(self, x, y, count):
+        self.type = "triangle"
+        self.count = count
+        super().__init__(x, y)
+    def __repr__(self):
+        return f"{self.type}@{self.x},{self.y}x{self.count}"
