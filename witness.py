@@ -24,6 +24,7 @@ FOV = 100 * math.pi / 180
 MONITOR = 1
 
 DEBUG = 0
+SLOW = True
 
 sct = mss.mss()
 
@@ -784,6 +785,8 @@ def waitForCross(movingLeft, current, gui):
                           (e.c2 == current and e.c1 == current.to)),
                           current.elements))
     if len(edgehex) > 0:
+        if SLOW:
+            time.sleep(0.3)
         if movingLeft:
             guilib.keyUp('a')
         else:
@@ -792,11 +795,11 @@ def waitForCross(movingLeft, current, gui):
         backwards = False
         time.sleep(0.5)
         
-        if not np.any(get_screenshot()[200:500,:,2] > 120):
+        if not np.any(get_screenshot()[200:500,500:1420,2] > 120):
             gui.moveBy(-2600, 0)
             backwards = True
             
-            if not np.any(get_screenshot()[200:500,:,2] > 120):
+            if not np.any(get_screenshot()[200:500,500:1420,2] > 120):
                 gui.moveBy(2600, 0)
                 backwards = False
                 if movingLeft:
@@ -810,30 +813,32 @@ def waitForCross(movingLeft, current, gui):
                     guilib.keyUp('d')
                 time.sleep(0.2)
                 
-                if not np.any(get_screenshot()[200:500,:,2] > 120):
+                if not np.any(get_screenshot()[200:500,500:1420,2] > 120):
                     gui.moveBy(-2600, 0)
                     backwards = True
         
         # Make sure the board is fully visible
-        orange = np.argwhere(get_screenshot()[200:500,:,2] > 120)
+        orange = np.argwhere(get_screenshot()[200:500,500:1420,2] > 120)
         assert(len(orange) > 0)
         avg = np.average(orange[:,1])
         
-        tempMovingLeft = avg < 960
-        guilib.keyUp('shift')
+        tempMovingLeft = avg < 460
+        if not SLOW:
+            guilib.keyUp('shift')
         if tempMovingLeft:
             guilib.keyDown('a')
         else:
             guilib.keyDown('d')
         
         startTime = time.time()
-        while len(orange) == 0 or (tempMovingLeft and (avg < 700)) or ((not tempMovingLeft) and (avg > 1220)):
-            orange = np.argwhere(get_screenshot()[200:500,:,2] > 120)
+        while len(orange) == 0 or (tempMovingLeft and (avg < 200)) or ((not tempMovingLeft) and (avg > 1220)):
+            orange = np.argwhere(get_screenshot()[200:500,500:1420,2] > 120)
             avg = np.average(orange[:,1])
             if time.time() - startTime > 3:
                 raise TimeoutError()
         
-        guilib.keyDown('shift')
+        if not SLOW:
+            guilib.keyDown('shift')
         if tempMovingLeft:
             guilib.keyUp('a')
         else:
@@ -871,6 +876,8 @@ def waitForCross(movingLeft, current, gui):
         else:
             guilib.keyDown('d')
     
+    if SLOW:
+        guilib.keyDown('shift')
     # Wait until no orange visible
     startTime = time.time()
     orange = np.argwhere(get_screenshot()[300:730,550:1370,2] > 150)
@@ -878,7 +885,9 @@ def waitForCross(movingLeft, current, gui):
         orange = np.argwhere(get_screenshot()[300:730,550:1370,2] > 150)
         if time.time() - startTime > 3:
             raise TimeoutError()
-    time.sleep(0.02)
+    time.sleep(0.1)
+    if SLOW:
+        guilib.keyUp('shift')
     
     # Wait until in the center of a block
     avg = np.average(orange[:,1])
@@ -896,9 +905,11 @@ def doPuzzle(gui, board):
     gui.schedule(1)
     hall = cv.imread("images/hall.png")
     maxloc = findimage(hall)
-    gui.moveTo(maxloc[0] + 200, maxloc[1] + 1000)
+    gui.moveTo(maxloc[0] + 200, maxloc[1] + 1500)
     gui.execute()
     guilib.keyUp('w')
+    if SLOW:
+        guilib.keyUp('shift')
     
     print(board)
     current = board.startnode
@@ -950,6 +961,8 @@ def doPuzzle(gui, board):
         gui.moveBy(-2000, -600)
     else:
         gui.moveBy(2000, -600)
+    if SLOW:
+        guilib.keyDown('shift')
 
 def main():
     escape = cv.imread('images/escape.png')
@@ -1128,6 +1141,8 @@ def main():
         doPuzzle(gui, fourBoard)
         
         guilib.keyDown('w')
+        if SLOW:
+            time.sleep(0.3)
         time.sleep(0.5)
         gui.moveBy(1200, 0)
         time.sleep(0.25)
