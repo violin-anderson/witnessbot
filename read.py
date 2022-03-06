@@ -7,7 +7,8 @@ from matplotlib import colors
 from skimage import segmentation
 from skimage import feature
 from scipy.ndimage import measurements
-import board, elements
+import board, elements, data
+import math
 
 DEBUG = 0
 
@@ -18,7 +19,6 @@ STARTHRESH = 0.75
 SQUARETHRESH = 0.75
 HEXTHRESH = 15
 
-MINSPREAD = 5
 BDJ = 8 #Block Delta maJor
 BDN = 2 #Block Delta miNor
 BLOCKTHRESHOLD = 0.95
@@ -39,6 +39,10 @@ def find_centers(image, dim, boardData):
         res = res[:, :-1 * 2**i] + res[:, 2**i:]
     
     clipped = (res > (2**sum(shape))*0.8).astype(int)
+    clipped[0,:] = 0
+    clipped[-1,:] = 0
+    clipped[:,0] = 0
+    clipped[:,-1] = 0
     
     if DEBUG >= 2:
         plt.imshow(clipped, cmap='gray')
@@ -52,7 +56,7 @@ def find_centers(image, dim, boardData):
     starts = np.argwhere(arr==1)
     ends = np.argwhere(arr==-1)
     ret = np.concatenate((starts, ends), 1)
-    ret = ret[ret[:,1]-ret[:,0] > MINSPREAD]
+    ret = ret[ret[:,1]-ret[:,0] > boardData.minspread]
     return np.average(ret, 1).astype(int) + 2**(min(shape)-1)
     
 
@@ -401,3 +405,115 @@ def readBoard(image, boardData):
     else:
         b = board.Board(vert_centers+boardData.region[0], horiz_centers+boardData.region[1], elts, [(0, horiz_centers.shape[0]-1)], [(vert_centers.shape[0]-1, 0)])
     return b
+
+def readCylinder(images, boardData):
+    CYLHORIZ = list(np.array(data.CYLHORIZ)-boardData.region[1])
+    assert(len(images) == 3)
+    
+    elts = []
+    starts = []
+    ends = []
+    xes = []
+    for iimg, image in enumerate(images):
+        frame = image[boardData.region[1]:boardData.region[3], boardData.region[0]:boardData.region[2]]
+        
+        findline = segmentation.flood(frame[:,:,2], boardData.startcoords, tolerance=35)
+        if DEBUG >= 2:
+            plt.imshow(findline, cmap='gray')
+            plt.show()
+        
+        vert_centers = list(find_centers(findline, 0, boardData))
+        if DEBUG >= 1:
+            print(vert_centers)
+        if len(vert_centers) == 3:
+            if vert_centers[0] > boardData.region[3] - vert_centers[-1]:
+                vert_centers.pop(-1)
+            else:
+                vert_centers.pop(0)
+        
+        for ix, x in enumerate(vert_centers):
+            xes.append(x)
+            y = int(math.sqrt((1 - ((x-90)**2) / (150**2)) * 115**2) + 460)
+            start = findline[y+10,x]
+            end = findline[y+25,x]
+            
+            if start:
+                if end:
+                    ends.append((2*iimg + ix, 6))
+                else:
+                    starts.append((2*iimg + ix, 6))
+            
+            y = int(-1 * math.sqrt((1 - ((x-90)**2) / (150**2)) * 115**2) + 156)
+            start = findline[y-10,x]
+            end = findline[y-25,x]
+            
+            if start:
+                if end:
+                    ends.append((2*iimg + ix, 0))
+                else:
+                    starts.append((2*iimg + ix, 0))
+        
+        if boardData.squares:
+            vert_centers.insert(0, max(vert_centers[0]-80, vert_centers[0] * -1 + 20))
+            deltax = -1
+                
+            if DEBUG >= 1:
+                print(vert_centers)
+            
+            for iy in range(len(CYLHORIZ)-1):
+                y = (CYLHORIZ[iy] + CYLHORIZ[iy+1])//2
+                for ix in range(len(vert_centers)-1):
+                    x = (vert_centers[ix] + vert_centers[ix+1])//2
+                    cellx = (iimg * 2 + ix + deltax)%6
+                    
+                    red = frame[y,x,2]
+                    if red < 50:
+                        elts.append(elements.Square(cellx, iy, 'b'))
+                    if red > 200:
+                        elts.append(elements.Square(cellx, iy, 'w'))
+                    if DEBUG >= 3:
+                        print(f"sq@{ix},{iy}: {red}")
+    
+    if DEBUG >= 3:
+        print(f"starts:{starts}")
+        print(f"ends:{ends}")
+    
+    assert(len(starts) == 2)
+    assert(len(ends) == 2)
+    xdiff = (starts[0][0] - starts[1][0])%6
+    if starts[0][1] == 0 or starts[1][1] == 0:
+        if starts[0][1] == 0:
+            starts.reverse()
+        if xdiff == 1 or xdiff == 5:
+            symmetry = 'rot'
+        else:
+            symmetry = 'rotparallel'
+    
+    elif xdiff == 1 or xdiff == 5:
+        symmetry = 'mirror'
+        if xdiff == 5:
+            starts.reverse()
+    else:
+        assert(xdiff == 3)
+        symmetry = 'parallel'
+    
+    if DEBUG >= 1:
+        print(elts)
+    
+    assert(starts[0][0] == 0)
+    return board.Board(xes, data.CYLHORIZ, elts, starts, ends, symmetry=symmetry, cylinder=True)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

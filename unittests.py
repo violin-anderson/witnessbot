@@ -156,6 +156,8 @@ class TestBoardReading(unittest.TestCase):
 #         print(b)
 #         self.assertEqual(len(b.elements), 51)
 # 
+# =============================================================================
+# =============================================================================
 #     def test_3(self):
 #         print("three")
 #         image = cv.imread("unittests/three.png")
@@ -215,9 +217,19 @@ class TestBoardReading(unittest.TestCase):
 #         self.assertTrue(b.solve())
 #         print(b)
 #         self.assertEqual(len(b.elements), 13)
-# =============================================================================
-
-# =============================================================================
+#
+#     def test_3f(self):
+#         print("threef")
+#         image = cv.imread("unittests/threef.png")
+#         
+#         b = read.readBoard(image, data.THREE)
+#         
+#         self.assertEqual(4, b.width)
+#         self.assertEqual(4, b.height)
+#         self.assertTrue(b.solve())
+#         print(b)
+#         self.assertEqual(len(b.elements), 14)
+# 
 #     def test_4(self):
 #         print("four")
 #         image = cv.imread("unittests/four.png")
@@ -334,9 +346,7 @@ class TestBoardReading(unittest.TestCase):
 #         self.assertTrue(b.solve(optimal=True))
 #         print(b)
 #         self.assertEqual(len(b.elements), 25)
-# =============================================================================
-
-# =============================================================================
+# 
 #     def test_5(self):
 #         print("five")
 #         image = cv.imread("unittests/five.png")
@@ -519,9 +529,7 @@ class TestBoardReading(unittest.TestCase):
 #         self.assertTrue(b.solve())
 #         print(b)
 #         self.assertEqual(len(b.elements), 14)
-# =============================================================================
-    
-# =============================================================================
+#     
 #     def test_7(self):
 #         print("seven")
 #         image = cv.imread("unittests/seven.png")
@@ -836,30 +844,30 @@ class TestBoardReading(unittest.TestCase):
 #         self.assertEqual(len(b.elements), 10)
 #         self.assertEqual(len(b.elements[-3].shape), 3)
 #         self.assertEqual(len(b.elements[-4].shape), 3)
+#                         
+#     def test_7p(self):
+#         print("sevenp")
+#         image = cv.imread("unittests/sevenp.png")
+#         
+#         b = read.readBoard(image, data.FSSE)
+#         
+#         self.assertEqual(4, b.width)
+#         self.assertEqual(4, b.height)
+#         
+#         for elt in b.elements:
+#             if elt.type == "tetris":
+#                 print(elt.shape)
+#             if elt.type == "square":
+#                 self.assertTrue(False)
+#         self.assertTrue(b.solve())
+#         print(b)
+#         
+#         self.assertEqual(len(b.elements), 9)
+#         self.assertEqual(len(b.elements[-2].shape), 4)
+#         self.assertEqual(len(b.elements[-4].shape), 5)
 # =============================================================================
-                        
-    def test_7p(self):
-        print("sevenp")
-        image = cv.imread("unittests/sevenp.png")
-        
-        b = read.readBoard(image, data.FSSE)
-        
-        self.assertEqual(4, b.width)
-        self.assertEqual(4, b.height)
-        
-        for elt in b.elements:
-            if elt.type == "tetris":
-                print(elt.shape)
-            if elt.type == "square":
-                self.assertTrue(False)
-        self.assertTrue(b.solve())
-        print(b)
-        
-        self.assertEqual(len(b.elements), 9)
-        self.assertEqual(len(b.elements[-2].shape), 4)
-        self.assertEqual(len(b.elements[-4].shape), 5)
+
 # =============================================================================
-# 
 #     def test_8(self):
 #         print("eight")
 #         image = cv.imread("unittests/eight.png")
@@ -943,7 +951,9 @@ class TestBoardReading(unittest.TestCase):
 #         self.assertEqual(len(b.elements), 12)
 #         self.assertEqual(len(list(filter(lambda e: e.type == "hex" and e.color == 'o', b.elements))), 2)
 #         self.assertEqual(len(list(filter(lambda e: e.type == "hex" and e.color == 'c', b.elements))), 2)
-# 
+# =============================================================================
+
+# =============================================================================
 #     def test_9(self):
 #         print("nine")
 #         image = cv.imread("unittests/nine.png")
@@ -1067,9 +1077,7 @@ class TestBoardReading(unittest.TestCase):
 #         self.assertTrue(b.solve())
 #         print(b)
 #         self.assertEqual(len(b.elements), 9)
-# =============================================================================
-
-# =============================================================================
+# 
 #     def test_11(self):
 #         print("eleven")
 #         image = cv.imread("unittests/eleven.png")
@@ -1139,9 +1147,7 @@ class TestBoardReading(unittest.TestCase):
 #         self.assertEqual(sum(map(lambda e: e.count, b.elements)), 9)
 #         self.assertTrue(b.solve())
 #         print(b)
-# =============================================================================
-
-# =============================================================================
+# 
 #     def test_11f(self):
 #         print("elevenf")
 #         image = cv.imread("unittests/elevenf.png")
@@ -1155,9 +1161,7 @@ class TestBoardReading(unittest.TestCase):
 #         self.assertEqual(sum(map(lambda e: e.count, b.elements)), 13)
 #         self.assertTrue(b.solve())
 #         print(b)
-# =============================================================================
-
-# =============================================================================
+# 
 #     def test_11g(self):
 #         print("eleveng")
 #         image = cv.imread("unittests/eleveng.png")
@@ -1172,6 +1176,95 @@ class TestBoardReading(unittest.TestCase):
 #         self.assertTrue(b.solve())
 #         print(b)
 # =============================================================================
+        
+    def test_13(self):
+        print("thirteen")
+        image0 = cv.imread("unittests/thirteen0.png")
+        image1 = cv.imread("unittests/thirteen1.png")
+        image2 = cv.imread("unittests/thirteen2.png")
+        
+        b = read.readCylinder([image1, image0, image2], data.THIRTEEN)
+        self.assertEqual(len(b.elements), 6)
+        self.assertTrue(b.solve(True))
+        print(b)
+                
+    def test_13b(self):
+        print("thirteenb")
+        image0 = cv.imread("unittests/thirteenb0.png")
+        image1 = cv.imread("unittests/thirteenb1.png")
+        image2 = cv.imread("unittests/thirteenb2.png")
+        
+        b = read.readCylinder([image1, image0, image2], data.THIRTEEN)
+        self.assertEqual(len(b.elements), 6)
+        self.assertTrue(b.solve(True))
+        print(b)
+                        
+    def test_13c(self):
+        print("thirteenc")
+        image0 = cv.imread("unittests/thirteenc0.png")
+        image1 = cv.imread("unittests/thirteenc1.png")
+        image2 = cv.imread("unittests/thirteenc2.png")
+        
+        b = read.readCylinder([image1, image0, image2], data.THIRTEEN)
+        #b.symmetry = "rotparallel"
+        self.assertEqual(len(b.elements), 6)
+        self.assertTrue(b.solve(True))
+        print(b)
+                                
+    def test_13d(self):
+        print("thirteend")
+        image0 = cv.imread("unittests/thirteend0.png")
+        image1 = cv.imread("unittests/thirteend1.png")
+        image2 = cv.imread("unittests/thirteend2.png")
+        
+        b = read.readCylinder([image1, image0, image2], data.THIRTEEN)
+        self.assertEqual(len(b.elements), 6)
+        self.assertTrue(b.solve(True))
+        print(b)
+                        
+    def test_13e(self):
+        print("thirteene")
+        image0 = cv.imread("unittests/thirteene0.png")
+        image1 = cv.imread("unittests/thirteene1.png")
+        image2 = cv.imread("unittests/thirteene2.png")
+        
+        b = read.readCylinder([image1, image0, image2], data.THIRTEEN)
+        self.assertEqual(len(b.elements), 6)
+        self.assertTrue(b.solve(True))
+        print(b)
+                                
+    def test_13f(self):
+        print("thirteenf")
+        image0 = cv.imread("unittests/thirteenf0.png")
+        image1 = cv.imread("unittests/thirteenf1.png")
+        image2 = cv.imread("unittests/thirteenf2.png")
+        
+        b = read.readCylinder([image1, image0, image2], data.THIRTEEN)
+        self.assertEqual(len(b.elements), 6)
+        self.assertTrue(b.solve(True))
+        print(b)
+                                
+    def test_13g(self):
+        print("thirteeng")
+        image0 = cv.imread("unittests/thirteeng0.png")
+        image1 = cv.imread("unittests/thirteeng1.png")
+        image2 = cv.imread("unittests/thirteeng2.png")
+        
+        b = read.readCylinder([image1, image0, image2], data.THIRTEEN)
+        self.assertEqual(len(b.elements), 6)
+        self.assertTrue(b.solve(True))
+        print(b)
+                                
+    def test_13h(self):
+        print("thirteenh")
+        image0 = cv.imread("unittests/thirteenh0.png")
+        image1 = cv.imread("unittests/thirteenh1.png")
+        image2 = cv.imread("unittests/thirteenh2.png")
+        
+        b = read.readCylinder([image1, image0, image2], data.THIRTEEN)
+        self.assertEqual(len(b.elements), 6)
+        self.assertTrue(b.solve(True))
+        print(b)
 
 if __name__ == '__main__':
     unittest.main()

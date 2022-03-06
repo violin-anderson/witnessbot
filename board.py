@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import itertools, copy
+import itertools
 import elements as boardElements
 
 class Corner():
@@ -50,12 +50,16 @@ class Cell():
                 neighbors.append(neighbor)
         return neighbors
 
-def dfs(startnode):
+def dfs(startnode, best, depth):
     if startnode.end:
         yield "Found"
+    
+    if best[0] and depth > best[0]:
+        return
 
     for i in range(len(startnode.edges)):
-        if not startnode.edges[i].to and (not startnode.friend or startnode.edges[i] != startnode.friend.edges[i]):
+        if not startnode.edges[i].to and (not startnode.friend or\
+            (startnode.edges[i] != startnode.friend.edges[i] and startnode != startnode.friend.edges[i])):
             startnode.to = startnode.edges[i]
             if startnode.friend:
                 #assert(not startnode.friend.edges[i].to)
@@ -63,7 +67,7 @@ def dfs(startnode):
                 startnode.friend.to = startnode.friend.edges[i]
                 startnode.friend.alt = True
                 startnode.friend.to.alt = True
-            for sln in dfs(startnode.edges[i]):
+            for sln in dfs(startnode.edges[i], best, depth+1):
                 yield sln
             if startnode.friend:
                 startnode.friend.to.alt = False
@@ -215,8 +219,16 @@ def validateGroups(groups, dims, cornermap):
     
     return True
 
+def getSlnLength(startnode):
+    ret = 0
+    on = startnode
+    while on.to:
+        on = on.to
+        ret += 1
+    return ret
+
 class Board():
-    def __init__(self, vertLines, horizLines, elements, starts, ends, symmetry=None):
+    def __init__(self, vertLines, horizLines, elements, starts, ends, symmetry=None, cylinder=False):
         self.width = len(vertLines)-1
         self.height = len(horizLines)-1
         self.vertLines = vertLines
@@ -224,7 +236,8 @@ class Board():
         self.elements = elements
         self.starts = starts
         self.ends = ends
-        self.symmetry = symmetry #mirror or rot
+        self.symmetry = symmetry #mirror, parallel, rot, or rotparallel
+        self.cylinder = cylinder
         if self.symmetry is not None:
             assert(len(starts) == 2)
         self.cornermap = None
@@ -244,8 +257,11 @@ class Board():
                         image[y][x] = "|"
                     else:
                         y = corner.y
-                        x = corner.x + corner.to.x
-                        image[y][x] = "_"
+                        if self.cylinder and (corner.x == 0 and corner.to.x != 1) or (corner.to.x == 0 and corner.x != 1):
+                            image[y] += "_"
+                        else:
+                            x = corner.x + corner.to.x
+                            image[y][x] = "_"
         return "\n".join(["".join(r) for r in image])
     
     def getSlnCoords(self):
@@ -281,21 +297,33 @@ class Board():
                 row.append(Corner(x, y, (self.vertLines[x], self.horizLines[y])))
             cornermap.append(row)
         
-        if self.symmetry == 'rot':
+        if self.symmetry is not None:
+            mx = self.starts[1][0]
             my = len(cornermap)-1
-            mx = len(cornermap[0])-1
             for y in range(self.height + 1):
                 for x in range(self.width + 1):
-                    if cornermap[y][x].edges:
-                        #assert(cornermap[my-y][mx-x].edges)
-                        pass
-                    else:
+                    if not cornermap[y][x].edges:
+                        if self.symmetry == 'rot':
+                            friend = cornermap[my-y][(mx-x)%len(cornermap[0])]
+                        elif self.symmetry == 'mirror':
+                            friend = cornermap[y][(mx-x)%len(cornermap[0])]
+                        elif self.symmetry == 'parallel':
+                            friend = cornermap[y][(mx+x)%len(cornermap[0])]
+                        elif self.symmetry == 'rotparallel':
+                            friend = cornermap[my-y][(mx+x)%len(cornermap[0])]
+                        cornermap[y][x].friend = friend
+                        friend.friend = cornermap[y][x]
                         for x2, y2 in [(x+1, y), (x, y-1), (x, y+1), (x-1, y)]:
-                            if y2 >= 0 and y2 < len(cornermap) and x2 >= 0 and x2 < len(cornermap[0]):
-                                cornermap[y][x].edges.append(cornermap[y2][x2])
-                                cornermap[my-y][mx-x].edges.append(cornermap[my-y2][mx-x2])
-                                cornermap[y][x].friend = cornermap[my-y][mx-x]
-                                cornermap[my-y][mx-x].friend = cornermap[y][x]
+                            if y2 >= 0 and y2 < len(cornermap) and (self.cylinder or (x2 >= 0 and x2 < len(cornermap[0]))):
+                                cornermap[y][x].edges.append(cornermap[y2][x2%len(cornermap[0])])
+                                if self.symmetry == 'rot':
+                                    friend.edges.append(cornermap[my-y2][(mx-x2)%len(cornermap[0])])
+                                elif self.symmetry == 'mirror':
+                                    friend.edges.append(cornermap[y2][(mx-x2)%len(cornermap[0])])
+                                elif self.symmetry == 'parallel':
+                                    friend.edges.append(cornermap[y2][(mx+x2)%len(cornermap[0])])
+                                elif self.symmetry == 'rotparallel':
+                                    friend.edges.append(cornermap[my-y2][(mx+x2)%len(cornermap[0])])
         else:
             for y in range(self.height + 1):
                 for x in range(self.width + 1):
@@ -309,12 +337,12 @@ class Board():
         cellmap = []
         for y in range(self.height):
             row = []
-            for x in range(self.width):
+            for x in range(self.width + self.cylinder):
                 row.append(Cell(x, y))
             cellmap.append(row)
 
         for y in range(self.height):
-            for x in range(self.width):
+            for x in range(self.width + self.cylinder):
                 for dx, dy in [(0, 1), (1, 0), (0, -1), (-1, 0)]:
                     if dx:
                         cx1 = cx2 = int(x + dx * 0.5 + 0.5)
@@ -324,14 +352,14 @@ class Board():
                         cy1 = cy2 = int(y + dy * 0.5 + 0.5)
                         cx1 = x
                         cx2 = x + 1
-                    if y + dy >= 0 and y + dy < len(cellmap) and x + dx >= 0 and x + dx < len(cellmap[0]):
-                        cellmap[y][x].connections.append((cellmap[y + dy][x + dx], (cornermap[cy1][cx1], cornermap[cy2][cx2])))
+                    if y + dy >= 0 and y + dy < len(cellmap) and (self.cylinder or (x + dx >= 0 and x + dx < len(cellmap[0]))):
+                        cellmap[y][x].connections.append((cellmap[y + dy][(x + dx)%len(cornermap[0])], (cornermap[cy1][cx1%len(cornermap[0])], cornermap[cy2][cx2%len(cornermap[0])])))
                     else:
-                        cellmap[y][x].connections.append((None, (cornermap[cy1][cx1], cornermap[cy2][cx2])))
+                        cellmap[y][x].connections.append((None, (cornermap[cy1][cx1%len(cornermap[0])], cornermap[cy2][cx2%len(cornermap[0])])))
         
         for e in self.elements:
             if e.type == "block":
-                if self.symmetry == 'rot':
+                if self.symmetry is not None:
                     pos = cornermap[e.y][e.x].edges.index(cornermap[e.y2][e.x2])
                     cornermap[e.y][e.x].edges.pop(pos)
                     cornermap[e.y][e.x].friend.edges.pop(pos)
@@ -345,10 +373,10 @@ class Board():
                 e.c = cornermap[e.y][e.x]
                 cornermap[e.y][e.x].elements.append(e)
             elif e.type == "edgehex":
-                e.c1 = cornermap[e.y][e.x]
-                e.c2 = cornermap[e.y2][e.x2]
-                cornermap[e.y][e.x].elements.append(e)
-                cornermap[e.y2][e.x2].elements.append(e)
+                e.c1 = cornermap[e.y][e.x%(len(cornermap[0]))]
+                e.c2 = cornermap[e.y2][e.x2%(len(cornermap[0]))]
+                cornermap[e.y][e.x%(len(cornermap[0]))].elements.append(e)
+                cornermap[e.y2][e.x2%(len(cornermap[0]))].elements.append(e)
             elif e.type in ["square", "star", "null", "tetris", "triangle"]:
                 cellmap[e.y][e.x].element = e
                 e.cell = cellmap[e.y][e.x]
@@ -356,20 +384,19 @@ class Board():
         #flatCorners = [c for r in cornermap for c in r]
         flatCells = [c for r in cellmap for c in r]
         
-        best = 0
+        best = [0]
         for xs, ys in self.starts:
             startnode = cornermap[ys][xs]
-            for sln in dfs(startnode):
-                groups = getGroups(flatCells)
+            for sln in dfs(startnode, best, 0):
 # =============================================================================
 #                 sln = \
-# """._._._._._. .
-# . ._._._. | |
-# ._| . . | | |
-# | ._. . |_| |
-# | | | . . ._|
-# | | |_._._| .
-# | |_._._._._."""
+# """._._. . ._.
+# . . |_. | .
+# . . . | | .
+# . ._. |_| .
+# . | | . . .
+# . | |_. . .
+# ._| . |_._."""
 #                 self.cornermap = cornermap
 #                 #print(self)
 #                 if self.__str__() == sln:
@@ -377,26 +404,57 @@ class Board():
 #                 else:
 #                     del self.cornermap
 # =============================================================================
-                if validateGroups(groups, (self.width, self.height), cornermap):
-                    self.cornermap = cornermap
-                    self.cellmap = cellmap
-                    self.startnode = startnode
-                    if not optimal:
-                        return True
-                    length = len(self.getSlnCoords())
-                    if not best or length < best:
-                        best = length
+                groups = getGroups(flatCells)
+                length = getSlnLength(startnode)
+                if not best[0] or length < best[0]:
+                    if validateGroups(groups, (self.width, self.height), cornermap):
+                        self.startnode = startnode
+                        self.cornermap = cornermap
+                        self.cellmap = cellmap
+                        if not optimal:
+                            return True
+                        best[0] = length
                         [c.store() for r in cornermap for c in r]
         
-        if best:
+        if best[0]:
             [c.restore() for r in cornermap for c in r]
             return True
         return False
 
 if __name__ == "__main__":
-    elts = [boardElements.Triangle(0, 0, 1), boardElements.Triangle(0, 2, 1), boardElements.Triangle(1, 2, 1),
-            boardElements.Triangle(2, 0, 1), boardElements.Triangle(3, 0, 1), boardElements.Triangle(2, 1, 1),
-            boardElements.Triangle(3, 2, 1), boardElements.Triangle(2, 3, 2)]
-    b = Board([0]*5, [0]*5, elts, [(0, 4)], [(4, 0)])
+# =============================================================================
+#     elts = [boardElements.Square(1, 2, 'w'), boardElements.Square(2, 4, 'b'),
+#             boardElements.Square(3, 3, 'b'), boardElements.Square(4, 5, 'w'),
+#             boardElements.Square(5, 5, 'b'), boardElements.Square(5, 0, 'w')]
+#     b = Board([0]*6, [0]*7, elts, [(0, 6), (5, 0)], [(5, 6), (0, 0)], symmetry='rot', cylinder=True)
+#     print(b.solve())
+#     print(b)
+# =============================================================================
+
+# =============================================================================
+#     elts = [boardElements.Square(0, 4, 'b'), boardElements.Square(1, 2, 'w'),
+#             boardElements.Square(2, 2, 'w'), boardElements.Square(3, 1, 'b'),
+#             boardElements.Square(3, 2, 'b'), boardElements.Square(4, 0, 'w')]
+#     b = Board([0]*6, [0]*7, elts, [(0, 6), (3, 6)], [(0, 0), (3, 0)], symmetry='parallel', cylinder=True)
+#     print(b.solve())
+#     print(b)
+# =============================================================================
+
+# =============================================================================
+#     elts = [boardElements.EdgeHex(1, 6, 2, 6), boardElements.EdgeHex(2, 0, 2, 1),
+#             boardElements.EdgeHex(2, 3, 2, 4), boardElements.EdgeHex(3, 0, 4, 0),
+#             boardElements.EdgeHex(3, 6, 4, 6), boardElements.EdgeHex(4, 2, 5, 2),
+#             boardElements.EdgeHex(5, 2, 5, 3), boardElements.EdgeHex(5, 4, 5, 5)]
+#     b = Board([0]*6, [0]*7, elts, [(0, 6), (5, 6)], [(0, 0), (5, 0)], symmetry='mirror', cylinder=True)
+#     print(b.solve())
+#     print(b)
+# =============================================================================
+
+    elts = [boardElements.EdgeHex(1, 5, 1, 6), boardElements.EdgeHex(1, 5, 2, 5),
+            boardElements.EdgeHex(1, 6, 2, 6), boardElements.EdgeHex(2, 4, 2, 5),
+            boardElements.EdgeHex(2, 2, 3, 2), boardElements.EdgeHex(4, 4, 5, 4),
+            boardElements.EdgeHex(5, 3, 6, 3)]
+    b = Board([0]*6, [0]*7, elts, [(0, 6), (3, 6)], [(0, 0), (3, 0)], symmetry='parallel', cylinder=True)
     print(b.solve())
     print(b)
+    
