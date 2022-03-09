@@ -40,6 +40,8 @@ ELEVEN = boardData("eleven", (0, 0, 600, 600), (550, 50), 1.12, blurshape=(6,2),
 
 THIRTEEN = boardData("thirteen", (870, 200, 1050, 800), (760, 970), 1.75, blurshape=(6,2), squares=True)
 
-COLDRAW = boardData("coldraw", (855, 220, 1060, 860), (760, 970), 1.65, blurshape=(1,1), linethresh=400, minspread=2)
+FOURTEEN = boardData("fourteen", (870, 200, 1050, 800), (760, 970), 1.75, blurshape=(6,2), edgeHexes=True)
+
+#COLDRAW = boardData("coldraw", (855, 220, 1060, 860), (760, 970), 1.65, blurshape=(1,1), linethresh=400, minspread=2)
 COLDRAW = boardData("coldraw", (870, 200, 1050, 800), (760, 970), 1.75, blurshape=(1,1), linethresh=400, minspread=2)
 CYLHORIZ = [265, 350, 430, 510, 590, 670, 750]

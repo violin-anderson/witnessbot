@@ -969,7 +969,7 @@ def doPuzzle(gui, board):
 
 def enterCylinder(gui, boardData, board):
     xcenter = (boardData.region[2]-boardData.region[0]) // 2
-    xmove = 50
+    xmove = 60
     gui.clickedsens = boardData.clickedsens
     on = board.startnode
     
@@ -982,17 +982,34 @@ def enterCylinder(gui, boardData, board):
             else:
                 dx = -1
             gui.moveBy(dx * xmove, 0)
+            ypos = on.pixel[1] - boardData.region[1]
             
             img = get_screenshot()[boardData.region[1]:boardData.region[3],boardData.region[0]:boardData.region[2]]
+            highlight = read.segmentation.flood(img[ypos-30:ypos+30,:,2], (30, xcenter), tolerance=10)
+            if dx == 1:
+                xpos = np.max(np.argwhere(highlight[30,:])) + 20
+            else:
+                xpos = np.min(np.argwhere(highlight[30,:])) - 20
+            gui.moveBy(xcenter - xpos + dx*xmove, 0)
+            
             vert_centers = read.find_centers(img[:,:,2] > 180, 0, boardData)#240
-            nextx = vert_centers[np.argmin(np.abs(vert_centers-xcenter)) + dx]
+            currix = np.argmin(np.abs(vert_centers-xcenter))
+            currx = vert_centers[currix]
+            while currix + dx < 0 or currix + dx >= len(vert_centers):
+                img = get_screenshot()[boardData.region[1]:boardData.region[3],boardData.region[0]:boardData.region[2]]
+                vert_centers = read.find_centers(img[:,:,2] > 180, 0, boardData)#240
+                currix = np.argmin(np.abs(vert_centers-currx))
+                currx = vert_centers[currix]
+                print(currx, end=" ")
+            
+            nextx = vert_centers[currix + dx]
+            print("\n")
             while abs(nextx - xcenter) > 5:
                 img = get_screenshot()[boardData.region[1]:boardData.region[3],boardData.region[0]:boardData.region[2]]
                 vert_centers = read.find_centers(img[:,:,2] > 180, 0, boardData)#240
                 nextx = vert_centers[np.argmin(np.abs(vert_centers-nextx))]
-                #print(nextx)
+                print(nextx, end=" ")
             
-            ypos = on.pixel[1] - boardData.region[1]
             highlight = read.segmentation.flood(img[ypos-30:ypos+30,:,2], (30, xcenter), tolerance=10)
             if dx == 1:
                 xpos = np.max(np.argwhere(highlight[30,:])) + 20
@@ -1008,13 +1025,22 @@ def enterCylinder(gui, boardData, board):
         dy = 1
     gui.moveBy(0, dy * 50)
     gui.click()
+    
+    gui.startstop_solve()
+    gui.moveBy(866.7 * on.x + 600, 0)
+    guilib.keyDown('w')
+    time.sleep(0.05)
+    if on.x == 0 or on.x == 5:
+        time.sleep(0.35)
+    if on.x == 5:
+        time.sleep(0.05)
 
 def main():
     escape = cv.imread('images/escape.png')
     music = cv.imread('images/record.png')
     music2 = cv.imread('images/recordc.png')
     returnImg = cv.imread('images/return.png')
-    
+        
     #############################
 # =============================================================================
 #     xes = [85, 0, 0, 0, 0, 0]
@@ -1130,10 +1156,10 @@ def main():
         
         except Exception:
             traceback.print_exc()
-            print("Pausing for 60 seconds, just for fun")
-            time.sleep(60)
-            print("Pausing for 10 more seconds")
-            time.sleep(10)
+            #print("Pausing for 60 seconds, just for fun")
+            #time.sleep(60)
+            #print("Pausing for 10 more seconds")
+            #time.sleep(10)
         
             if not gui.walking:
                 gui.startstop_solve()
@@ -1210,6 +1236,10 @@ def main():
             time.sleep(0.3)
         time.sleep(0.5)
         gui.moveBy(1200, 0)
+        image = get_screenshot()
+        image = (image[:,:,0] < 30) & (image[:,:,2] > 180)
+        locs = np.argwhere(image)
+        gui.moveTo(np.average(locs[:,1]))
         time.sleep(0.25)
         guilib.keyUp('w')
         gui.startstop_solve()
@@ -1241,7 +1271,7 @@ def main():
         cv.imwrite(f"thirteen{i+1}.png", get_screenshot())
         gui.moveBy(-800, 0)
         guilib.keyDown('d')
-        time.sleep(0.7)
+        time.sleep(0.55)
         guilib.keyUp('d')
         gui.moveBy(-800, 0)
         gui.startstop_solve()
@@ -1250,20 +1280,72 @@ def main():
         b = read.readCylinder([images[1], images[0], images[2]], data.THIRTEEN)
         gui.execute()
         
-        gui.moveTo(data.COLDRAW.region[0] + b.vertLines[0], b.horizLines[-1])
+        frame = get_screenshot()[data.COLDRAW.region[1]:data.COLDRAW.region[3], data.COLDRAW.region[0]:data.COLDRAW.region[2]]
+        findline = read.segmentation.flood(frame[:,:,2], data.COLDRAW.startcoords, tolerance=35)
+        vert_centers = list(read.find_centers(findline, 0, data.COLDRAW))
+        
+        gui.moveTo(data.COLDRAW.region[0] + vert_centers[1], b.horizLines[-1])
         gui.click()
         
-        gui.schedule(1)
         b.solve(True)
         print(b)
-        gui.execute()
         
         enterCylinder(gui, data.COLDRAW, b)
+        
+        image = get_screenshot()
+        image = (image[400:,:,0] < 30) & (image[400:,:,2] > 180)
+        locs = np.argwhere(image)
+        gui.moveTo(np.average(locs[:,1]) + 150)
+        time.sleep(1.3)
+        gui.moveBy(-1200, 0)
+        gui.startstop_solve()
+        guilib.keyUp('w')
+        gui.startstop_solve()
+        gui.startstop_solve()
+        time.sleep(0.5)
+        gui.startstop_solve()
+        time.sleep(0.5)
+        
+        images = []
+        for i in range(2):
+            img = get_screenshot()
+            images.append(img)
+            cv.imwrite(f"fourteen{i}.png", img)
+            gui.moveBy(800, 0)
+            guilib.keyDown('a')
+            time.sleep(0.7)
+            guilib.keyUp('a')
+            gui.moveBy(800, 0)
+            gui.startstop_solve()
+            time.sleep(0.3)
+            gui.startstop_solve()
+            time.sleep(0.3)
+            
+        img = get_screenshot()
+        images.append(img)
+        cv.imwrite(f"fourteen{i+1}.png", get_screenshot())
+        
+        gui.startstop_solve()
+        b = read.readCylinder([images[2], images[1], images[0]], data.FOURTEEN)
+        
+        gui.moveTo(data.COLDRAW.region[0] + b.vertLines[0], b.horizLines[-1])
+        
+        b.solve()
+        print(b)
+        
+        gui.click()
+        enterCylinder(gui, data.COLDRAW, b)
+        
+        time.sleep(0.3)
+        gui.moveBy(500, 0)
+        time.sleep(0.3)
+        guilib.keyUp('w')
+        gui.moveBy(-2000, -300)
 
         guilib.keyUp('shift')
         raise Exception('NYI')
         
-        # Walk from twelve to ten
+        # Walk from end to ten
         gui.moveBy(2600, 0)
         image = get_screenshot()
         image = (image[:,:,0] < 30) & (image[:,:,2] > 180)

@@ -417,7 +417,10 @@ def readCylinder(images, boardData):
     for iimg, image in enumerate(images):
         frame = image[boardData.region[1]:boardData.region[3], boardData.region[0]:boardData.region[2]]
         
-        findline = segmentation.flood(frame[:,:,2], boardData.startcoords, tolerance=35)
+        if boardData.squares:
+            findline = segmentation.flood(frame[:,:,2], boardData.startcoords, tolerance=35)
+        else:
+            findline = frame[:,:,2] > 150
         if DEBUG >= 2:
             plt.imshow(findline, cmap='gray')
             plt.show()
@@ -425,36 +428,68 @@ def readCylinder(images, boardData):
         vert_centers = list(find_centers(findline, 0, boardData))
         if DEBUG >= 1:
             print(vert_centers)
+        
+        if boardData.edgeHexes:
+            if len(vert_centers) == 2:
+                vert_centers.append(boardData.region[2] - boardData.region[0] - 8)
+            
+            for iy in range(7):
+                for ix in range(len(vert_centers) - 1):
+                    value = np.min(frame[CYLHORIZ[iy],vert_centers[ix]:vert_centers[ix+1],2])
+                    if DEBUG >= 3:
+                        print(f"hex@{ix}:,{iy}: {value}")
+                    if value < 75:
+                        new = elements.EdgeHex((2*iimg + ix)%6, iy, (2*iimg + ix + 1)%6, iy)
+                        if not new in elts:
+                            elts.append(new)
+            
+            for iy in range(6):
+                for ix in range(len(vert_centers)):
+                    value = np.min(frame[CYLHORIZ[iy]:CYLHORIZ[iy+1],vert_centers[ix],2])
+                    if DEBUG >= 3:
+                        print(f"hex@{ix},{iy}:: {value}")
+                    if value < 75:
+                        new = elements.EdgeHex((2*iimg + ix)%6, iy, (2*iimg + ix)%6, iy + 1)
+                        if not new in elts:
+                            elts.append(new)
+        
         if len(vert_centers) == 3:
-            if vert_centers[0] > boardData.region[3] - vert_centers[-1]:
+            if vert_centers[0] > boardData.region[2] - boardData.region[0] - vert_centers[-1]:
                 vert_centers.pop(-1)
             else:
                 vert_centers.pop(0)
         
         for ix, x in enumerate(vert_centers):
             xes.append(x)
+            
             y = int(math.sqrt((1 - ((x-90)**2) / (150**2)) * 115**2) + 460)
             start = findline[y+10,x]
-            end = findline[y+25,x]
+            end = findline[y+20,x]
             
             if start:
                 if end:
-                    ends.append((2*iimg + ix, 6))
+                    appendTo = ends
                 else:
-                    starts.append((2*iimg + ix, 6))
+                    appendTo = starts
+                new = ((2*iimg + ix)%6, 6)
+                if not new in appendTo:
+                    appendTo.append(new)
             
             y = int(-1 * math.sqrt((1 - ((x-90)**2) / (150**2)) * 115**2) + 156)
             start = findline[y-10,x]
-            end = findline[y-25,x]
+            end = findline[y-20,x]
             
             if start:
                 if end:
-                    ends.append((2*iimg + ix, 0))
+                    appendTo = ends
                 else:
-                    starts.append((2*iimg + ix, 0))
+                    appendTo = starts
+                new = ((2*iimg + ix)%6, 0)
+                if not new in appendTo:
+                    appendTo.append(new)
         
         if boardData.squares:
-            vert_centers.insert(0, max(vert_centers[0]-80, vert_centers[0] * -1 + 20))
+            vert_centers.insert(0, max(vert_centers[0]-75, vert_centers[0] * -1 + 20))
             deltax = -1
                 
             if DEBUG >= 1:
@@ -467,13 +502,13 @@ def readCylinder(images, boardData):
                     cellx = (iimg * 2 + ix + deltax)%6
                     
                     red = frame[y,x,2]
-                    if red < 50:
+                    if red < 60:
                         elts.append(elements.Square(cellx, iy, 'b'))
                     if red > 200:
                         elts.append(elements.Square(cellx, iy, 'w'))
                     if DEBUG >= 3:
                         print(f"sq@{ix},{iy}: {red}")
-    
+
     if DEBUG >= 3:
         print(f"starts:{starts}")
         print(f"ends:{ends}")
@@ -497,10 +532,25 @@ def readCylinder(images, boardData):
         assert(xdiff == 3)
         symmetry = 'parallel'
     
+    if not starts[0][0] == 0:
+        subx = starts[0][0]
+        starts[0] = (0, starts[0][1])
+        starts[1] = ((starts[1][0]-subx)%6, starts[1][1])
+        ends[0] = ((ends[0][0]-subx)%6, ends[0][1])
+        ends[1] = ((ends[1][0]-subx)%6, ends[1][1])
+        for elt in elts:
+            elt.x = (elt.x - subx)%6
+            if hasattr(elt, "x2"):
+                elt.x2 = (elt.x2 - subx)%6
+        xes = xes[subx:] + xes[:subx]
+
+    if DEBUG >= 3:
+        print(f"starts:{starts}")
+        print(f"ends:{ends}")
+            
     if DEBUG >= 1:
         print(elts)
     
-    assert(starts[0][0] == 0)
     return board.Board(xes, data.CYLHORIZ, elts, starts, ends, symmetry=symmetry, cylinder=True)
 
 
