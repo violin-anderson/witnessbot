@@ -4,7 +4,7 @@ import unittest
 import read, data, witness
 import cv2 as cv
 
-read.DEBUG = 3
+read.DEBUG = 0
 witness.DEBUG = 0
 
 class TestBoardReading(unittest.TestCase):
@@ -1255,9 +1255,7 @@ class TestBoardReading(unittest.TestCase):
 #         self.assertEqual(len(b.elements), 6)
 #         self.assertTrue(b.solve(True))
 #         print(b)
-# =============================================================================
-                                
-# =============================================================================
+#                                 
 #     def test_13h(self):
 #         print("thirteenh")
 #         image0 = cv.imread("unittests/thirteenh0.png")
@@ -1270,7 +1268,7 @@ class TestBoardReading(unittest.TestCase):
 #         print(b)
 #                                 
 #     def test_13i(self):
-#         print("thirteenih")
+#         print("thirteeni")
 #         image0 = cv.imread("unittests/thirteeni0.png")
 #         image1 = cv.imread("unittests/thirteeni1.png")
 #         image2 = cv.imread("unittests/thirteeni2.png")
@@ -1290,62 +1288,62 @@ class TestBoardReading(unittest.TestCase):
 #         self.assertEqual(len(b.elements), 6)
 #         self.assertTrue(b.solve(True))
 #         print(b)
-# 
-#     def test_14(self):
-#         print("fourteen")
-#         image0 = cv.imread("unittests/fourteen0.png")
-#         image1 = cv.imread("unittests/fourteen1.png")
-#         image2 = cv.imread("unittests/fourteen2.png")
-#         
-#         b = read.readCylinder([image2, image1, image0], data.FOURTEEN)
-#         self.assertEqual(len(b.elements), 6)
-#         self.assertTrue(b.solve(True))
-#         print(b)
-# 
-#     def test_14b(self):
-#         print("fourteenb")
-#         image0 = cv.imread("unittests/fourteenb0.png")
-#         image1 = cv.imread("unittests/fourteenb1.png")
-#         image2 = cv.imread("unittests/fourteenb2.png")
-#         
-#         b = read.readCylinder([image2, image1, image0], data.FOURTEEN)
-#         self.assertEqual(len(b.elements), 7)
-#         self.assertTrue(b.solve(True))
-#         print(b)
-# 
-#     def test_14c(self):
-#         print("fourteenc")
-#         image0 = cv.imread("unittests/fourteenc0.png")
-#         image1 = cv.imread("unittests/fourteenc1.png")
-#         image2 = cv.imread("unittests/fourteenc2.png")
-#         
-#         b = read.readCylinder([image2, image1, image0], data.FOURTEEN)
-#         self.assertEqual(len(b.elements), 6)
-#         self.assertTrue(b.solve(True))
-#         print(b)
-# 
-#     def test_14d(self):
-#         print("fourteend")
-#         image0 = cv.imread("unittests/fourteend0.png")
-#         image1 = cv.imread("unittests/fourteend1.png")
-#         image2 = cv.imread("unittests/fourteend2.png")
-#         
-#         b = read.readCylinder([image2, image1, image0], data.FOURTEEN)
-#         self.assertEqual(len(b.elements), 6)
-#         self.assertTrue(b.solve(True))
-#         print(b)
-# 
-#     def test_14e(self):
-#         print("fourteene")
-#         image0 = cv.imread("unittests/fourteene0.png")
-#         image1 = cv.imread("unittests/fourteene1.png")
-#         image2 = cv.imread("unittests/fourteene2.png")
-#         
-#         b = read.readCylinder([image2, image1, image0], data.FOURTEEN)
-#         self.assertEqual(len(b.elements), 6)
-#         self.assertTrue(b.solve())
-#         print(b)
 # =============================================================================
+
+    def test_14(self):
+        print("fourteen")
+        image0 = cv.imread("unittests/fourteen0.png")
+        image1 = cv.imread("unittests/fourteen1.png")
+        image2 = cv.imread("unittests/fourteen2.png")
+        
+        b = read.readCylinder([image2, image1, image0], data.FOURTEEN)
+        self.assertEqual(len(b.elements), 6)
+        self.assertTrue(b.solve(True))
+        print(b)
+
+    def test_14b(self):
+        print("fourteenb")
+        image0 = cv.imread("unittests/fourteenb0.png")
+        image1 = cv.imread("unittests/fourteenb1.png")
+        image2 = cv.imread("unittests/fourteenb2.png")
+        
+        b = read.readCylinder([image2, image1, image0], data.FOURTEEN)
+        self.assertEqual(len(b.elements), 7)
+        self.assertTrue(b.solve(True))
+        print(b)
+
+    def test_14c(self):
+        print("fourteenc")
+        image0 = cv.imread("unittests/fourteenc0.png")
+        image1 = cv.imread("unittests/fourteenc1.png")
+        image2 = cv.imread("unittests/fourteenc2.png")
+        
+        b = read.readCylinder([image2, image1, image0], data.FOURTEEN)
+        self.assertEqual(len(b.elements), 6)
+        self.assertTrue(b.solve(True))
+        print(b)
+
+    def test_14d(self):
+        print("fourteend")
+        image0 = cv.imread("unittests/fourteend0.png")
+        image1 = cv.imread("unittests/fourteend1.png")
+        image2 = cv.imread("unittests/fourteend2.png")
+        
+        b = read.readCylinder([image2, image1, image0], data.FOURTEEN)
+        self.assertEqual(len(b.elements), 6)
+        self.assertTrue(b.solve(True))
+        print(b)
+
+    def test_14e(self):
+        print("fourteene")
+        image0 = cv.imread("unittests/fourteene0.png")
+        image1 = cv.imread("unittests/fourteene1.png")
+        image2 = cv.imread("unittests/fourteene2.png")
+        
+        b = read.readCylinder([image2, image1, image0], data.FOURTEEN)
+        self.assertEqual(len(b.elements), 6)
+        self.assertTrue(b.solve())
+        print(b)
 
     def test_14f(self):
         print("fourteenf")
@@ -1355,6 +1353,39 @@ class TestBoardReading(unittest.TestCase):
         
         b = read.readCylinder([image2, image1, image0], data.FOURTEEN)
         self.assertEqual(len(b.elements), 6)
+        self.assertTrue(b.solve())
+        print(b)
+
+    def test_14g(self):
+        print("fourteeng")
+        image0 = cv.imread("unittests/fourteeng0.png")
+        image1 = cv.imread("unittests/fourteeng1.png")
+        image2 = cv.imread("unittests/fourteeng2.png")
+        
+        b = read.readCylinder([image2, image1, image0], data.FOURTEEN)
+        self.assertEqual(len(b.elements), 8)
+        self.assertTrue(b.solve())
+        print(b)
+
+    def test_14h(self):
+        print("fourteenh")
+        image0 = cv.imread("unittests/fourteenh0.png")
+        image1 = cv.imread("unittests/fourteenh1.png")
+        image2 = cv.imread("unittests/fourteenh2.png")
+        
+        b = read.readCylinder([image2, image1, image0], data.FOURTEEN)
+        self.assertEqual(len(b.elements), 7)
+        self.assertTrue(b.solve())
+        print(b)
+
+    def test_14i(self):
+        print("fourteeni")
+        image0 = cv.imread("unittests/fourteeni0.png")
+        image1 = cv.imread("unittests/fourteeni1.png")
+        image2 = cv.imread("unittests/fourteeni2.png")
+        
+        b = read.readCylinder([image2, image1, image0], data.FOURTEEN)
+        self.assertEqual(len(b.elements), 7)
         self.assertTrue(b.solve())
         print(b)
 

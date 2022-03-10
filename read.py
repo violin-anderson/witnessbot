@@ -413,7 +413,9 @@ def readCylinder(images, boardData):
     elts = []
     starts = []
     ends = []
-    xes = []
+    xes = [0] * 6
+    centerVert = (boardData.region[2] - boardData.region[0]) / 2
+    centerPosGoal = -1
     for iimg, image in enumerate(images):
         frame = image[boardData.region[1]:boardData.region[3], boardData.region[0]:boardData.region[2]]
         
@@ -429,38 +431,15 @@ def readCylinder(images, boardData):
         if DEBUG >= 1:
             print(vert_centers)
         
-        if boardData.edgeHexes:
-            if len(vert_centers) == 2:
-                vert_centers.append(boardData.region[2] - boardData.region[0] - 8)
-            
-            for iy in range(7):
-                for ix in range(len(vert_centers) - 1):
-                    value = np.min(frame[CYLHORIZ[iy],vert_centers[ix]:vert_centers[ix+1],2])
-                    if DEBUG >= 3:
-                        print(f"hex@{ix}:,{iy}: {value}")
-                    if value < 75:
-                        new = elements.EdgeHex((2*iimg + ix)%6, iy, (2*iimg + ix + 1)%6, iy)
-                        if not new in elts:
-                            elts.append(new)
-            
-            for iy in range(6):
-                for ix in range(len(vert_centers)):
-                    value = np.min(frame[CYLHORIZ[iy]:CYLHORIZ[iy+1],vert_centers[ix],2])
-                    if DEBUG >= 3:
-                        print(f"hex@{ix},{iy}:: {value}")
-                    if value < 75:
-                        new = elements.EdgeHex((2*iimg + ix)%6, iy, (2*iimg + ix)%6, iy + 1)
-                        if not new in elts:
-                            elts.append(new)
-        
-        if len(vert_centers) == 3:
-            if vert_centers[0] > boardData.region[2] - boardData.region[0] - vert_centers[-1]:
-                vert_centers.pop(-1)
-            else:
-                vert_centers.pop(0)
+        centerPos = np.argmin(np.abs(np.array(vert_centers)-centerVert))
+        centerVert = vert_centers[centerPos]
+        if centerPosGoal == -1:
+            centerPosGoal = centerPos
         
         for ix, x in enumerate(vert_centers):
-            xes.append(x)
+            ix = (2*iimg + ix - centerPos)%6
+            if not xes[ix]:
+                xes[ix] = x
             
             y = int(math.sqrt((1 - ((x-90)**2) / (150**2)) * 115**2) + 460)
             start = findline[y+10,x]
@@ -471,7 +450,7 @@ def readCylinder(images, boardData):
                     appendTo = ends
                 else:
                     appendTo = starts
-                new = ((2*iimg + ix)%6, 6)
+                new = (ix, 6)
                 if not new in appendTo:
                     appendTo.append(new)
             
@@ -484,13 +463,18 @@ def readCylinder(images, boardData):
                     appendTo = ends
                 else:
                     appendTo = starts
-                new = ((2*iimg + ix)%6, 0)
+                new = (ix, 0)
                 if not new in appendTo:
                     appendTo.append(new)
         
         if boardData.squares:
-            vert_centers.insert(0, max(vert_centers[0]-75, vert_centers[0] * -1 + 20))
-            deltax = -1
+            if len(vert_centers) == 2:
+                if centerPos == 0:
+                    vert_centers.insert(0, max(vert_centers[0]-75, vert_centers[0] * -1 + 20))
+                else:
+                    vert_centers.append(min(vert_centers[1]+75, 2*(boardData.region[2] - boardData.region[0]) - vert_centers[1] - 20))
+            else:
+                assert(centerPos==1)
                 
             if DEBUG >= 1:
                 print(vert_centers)
@@ -499,7 +483,7 @@ def readCylinder(images, boardData):
                 y = (CYLHORIZ[iy] + CYLHORIZ[iy+1])//2
                 for ix in range(len(vert_centers)-1):
                     x = (vert_centers[ix] + vert_centers[ix+1])//2
-                    cellx = (iimg * 2 + ix + deltax)%6
+                    cellx = (iimg * 2 + ix  - 1)%6
                     
                     red = frame[y,x,2]
                     if red < 60:
@@ -508,6 +492,37 @@ def readCylinder(images, boardData):
                         elts.append(elements.Square(cellx, iy, 'w'))
                     if DEBUG >= 3:
                         print(f"sq@{ix},{iy}: {red}")
+                    
+        if boardData.edgeHexes:
+            for iy in range(6):
+                for ix in range(len(vert_centers)):
+                    linex = (2*iimg + ix - centerPos)%6
+                    value = np.min(frame[CYLHORIZ[iy]:CYLHORIZ[iy+1],vert_centers[ix],2])
+                    if DEBUG >= 3:
+                        print(f"hex@{ix},{iy}:: {value}")
+                    if value < 75:
+                        new = elements.EdgeHex(linex, iy, linex, iy + 1)
+                        if not new in elts:
+                            elts.append(new)
+            
+            if len(vert_centers) == 2:
+                if centerPos == 0:
+                    vert_centers.insert(0, 8)
+                else:
+                    vert_centers.append(boardData.region[2] - boardData.region[0] - 8)
+            else:
+                assert(centerPos==1)
+            
+            for iy in range(7):
+                for ix in range(len(vert_centers) - 1):
+                    linex = (2*iimg + ix - 1)%6
+                    value = np.min(frame[CYLHORIZ[iy],vert_centers[ix]:vert_centers[ix+1],2])
+                    if DEBUG >= 3:
+                        print(f"hex@{ix}:,{iy}: {value}")
+                    if value < 75:
+                        new = elements.EdgeHex(linex, iy, (linex + 1)%6, iy)
+                        if not new in elts:
+                            elts.append(new)
 
     if DEBUG >= 3:
         print(f"starts:{starts}")
