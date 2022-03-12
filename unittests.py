@@ -217,7 +217,7 @@ class TestBoardReading(unittest.TestCase):
 #         self.assertTrue(b.solve())
 #         print(b)
 #         self.assertEqual(len(b.elements), 13)
-#
+# 
 #     def test_3f(self):
 #         print("threef")
 #         image = cv.imread("unittests/threef.png")
@@ -229,6 +229,20 @@ class TestBoardReading(unittest.TestCase):
 #         self.assertTrue(b.solve())
 #         print(b)
 #         self.assertEqual(len(b.elements), 14)
+# 
+#     def test_3g(self):
+#         print("threeg")
+#         image = cv.imread("unittests/threeg.png")
+#         
+#         b = read.readBoard(image, data.THREE)
+#         
+#         self.assertEqual(4, b.width)
+#         self.assertEqual(4, b.height)
+#         self.assertTrue(b.solve())
+#         print(b)
+#         self.assertEqual(len(b.elements), 13)
+# =============================================================================
+# =============================================================================
 # 
 #     def test_4(self):
 #         print("four")
@@ -1342,7 +1356,7 @@ class TestBoardReading(unittest.TestCase):
         
         b = read.readCylinder([image2, image1, image0], data.FOURTEEN)
         self.assertEqual(len(b.elements), 6)
-        self.assertTrue(b.solve())
+        self.assertTrue(b.solve(True))
         print(b)
 
     def test_14f(self):
@@ -1353,7 +1367,7 @@ class TestBoardReading(unittest.TestCase):
         
         b = read.readCylinder([image2, image1, image0], data.FOURTEEN)
         self.assertEqual(len(b.elements), 6)
-        self.assertTrue(b.solve())
+        self.assertTrue(b.solve(True))
         print(b)
 
     def test_14g(self):
@@ -1364,7 +1378,7 @@ class TestBoardReading(unittest.TestCase):
         
         b = read.readCylinder([image2, image1, image0], data.FOURTEEN)
         self.assertEqual(len(b.elements), 8)
-        self.assertTrue(b.solve())
+        self.assertTrue(b.solve(True))
         print(b)
 
     def test_14h(self):
@@ -1375,7 +1389,7 @@ class TestBoardReading(unittest.TestCase):
         
         b = read.readCylinder([image2, image1, image0], data.FOURTEEN)
         self.assertEqual(len(b.elements), 7)
-        self.assertTrue(b.solve())
+        self.assertTrue(b.solve(True))
         print(b)
 
     def test_14i(self):
@@ -1386,7 +1400,7 @@ class TestBoardReading(unittest.TestCase):
         
         b = read.readCylinder([image2, image1, image0], data.FOURTEEN)
         self.assertEqual(len(b.elements), 7)
-        self.assertTrue(b.solve())
+        self.assertTrue(b.solve(True))
         print(b)
 
 if __name__ == '__main__':

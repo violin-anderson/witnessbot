@@ -828,13 +828,16 @@ def waitForCross(movingLeft, current, gui):
         tempMovingLeft = avg < 460
         if not SLOW:
             guilib.keyUp('shift')
+            guilib.keyDown('s')
+            time.sleep(0.2)
+            guilib.keyUp('s')
             if tempMovingLeft:
                 guilib.keyDown('a')
             else:
                 guilib.keyDown('d')
             
             startTime = time.time()
-            while len(orange) == 0 or (tempMovingLeft and (avg < 200)) or ((not tempMovingLeft) and (avg > 1220)):
+            while len(orange) == 0 or (tempMovingLeft and (avg < 500)) or ((not tempMovingLeft) and (avg > 920)):
                 orange = np.argwhere(get_screenshot()[200:500,500:1420,2] > 120)
                 avg = np.average(orange[:,1])
                 if time.time() - startTime > 3:
@@ -898,7 +901,11 @@ def waitForCross(movingLeft, current, gui):
         orange = np.argwhere(get_screenshot()[300:730,550:1370,2] > 150)
         avg = np.average(orange[:,1])
         if time.time() - startTime > 3:
+            guilib.keyUp('a')
+            guilib.keyUp('d')
             raise TimeoutError()
+    
+    return len(edgehex) > 0
 
 def doPuzzle(gui, board):
     gui.moveBy(1400, 0)
@@ -925,7 +932,7 @@ def doPuzzle(gui, board):
         gui.moveBy(-640, 0)
         movingLeft = False
         guilib.keyDown('d')
-    waitForCross(movingLeft, current, gui)
+    puzzleCount = waitForCross(movingLeft, current, gui)
     
     while current.to.to is not None:
         current = current.to
@@ -954,7 +961,19 @@ def doPuzzle(gui, board):
                 guilib.keyDown('a')
             movingLeft = not movingLeft
         
-        waitForCross(movingLeft, current, gui)
+        if puzzleCount == 2:
+            if movingLeft:
+                guilib.keyUp('a')
+            else:
+                guilib.keyUp('d')
+            time.sleep(0.5)
+            if movingLeft:
+                guilib.keyDown('a')
+            else:
+                guilib.keyDown('d')
+            puzzleCount = 0
+        
+        puzzleCount += waitForCross(movingLeft, current, gui)
     
     if movingLeft:
         guilib.keyUp('a')
@@ -967,7 +986,7 @@ def doPuzzle(gui, board):
     if SLOW:
         guilib.keyDown('shift')
 
-def enterCylinder(gui, boardData, board):
+def enterCylinder(gui, boardData, board, start):
     xcenter = (boardData.region[2]-boardData.region[0]) // 2
     xmove = 60
     gui.clickedsens = boardData.clickedsens
@@ -976,13 +995,60 @@ def enterCylinder(gui, boardData, board):
     while on.to:
         if on.to.x == on.x:
             gui.moveTo(gui.mousecoords[0], on.to.pixel[1])
+            #time.sleep(1)
         else:
             if (on.to.x-on.x)%6 == 1:
                 dx = 1
             else:
                 dx = -1
-            gui.moveBy(dx * xmove, 0)
+            
             ypos = on.pixel[1] - boardData.region[1]
+            correct = True
+            if start:
+                startOffset = xcenter - start
+                if abs(startOffset) > xmove and (startOffset < 0) == (dx > 0):
+                    time.sleep(0.3)
+                    gui.moveBy(dx * 20, 0)
+                    correct = False
+                else:
+                    gui.moveBy(startOffset + dx * xmove, 0)
+                xseed = start
+                start = 0
+            else:
+                gui.moveBy(dx * xmove, 0)
+                xseed = xcenter
+                
+            img = get_screenshot()[boardData.region[1]:boardData.region[3],boardData.region[0]:boardData.region[2]]
+        
+            if correct:
+                highlight = read.segmentation.flood(img[ypos-30:ypos+30,:,2], (30, xseed), tolerance=10)
+                if dx == 1:
+                    xpos = np.max(np.argwhere(highlight[30,:])) + 20
+                else:
+                    xpos = np.min(np.argwhere(highlight[30,:])) - 20
+                gui.moveBy(xcenter - xpos + dx*xmove, 0)
+            
+            vert_centers = read.find_centers(img[:,:,2] > 180, 0, boardData)
+            currix = np.argmin(np.abs(vert_centers-xseed))
+            currx = vert_centers[currix]
+            print("\nTracking center")
+            while currix + dx < 0 or currix + dx >= len(vert_centers):
+                img = get_screenshot()[boardData.region[1]:boardData.region[3],boardData.region[0]:boardData.region[2]]
+                vert_centers = read.find_centers(img[:,:,2] > 180, 0, boardData)
+                currix = np.argmin(np.abs(vert_centers-currx))
+                currx = vert_centers[currix]
+                print(currx, end=" ")
+            
+            nextx = vert_centers[currix + dx]
+            print("\nTracking next")
+            print(f"vert centers: {vert_centers}, currix: {currix}, dx: {dx}")
+            print(nextx, end=" ")
+            while abs(nextx - xcenter) > 5:
+                img = get_screenshot()[boardData.region[1]:boardData.region[3],boardData.region[0]:boardData.region[2]]
+                vert_centers = read.find_centers(img[:,:,2] > 180, 0, boardData)
+                nextx = vert_centers[np.argmin(np.abs(vert_centers-nextx))]
+                print(nextx, end=" ")
+            print("\n")
             
             img = get_screenshot()[boardData.region[1]:boardData.region[3],boardData.region[0]:boardData.region[2]]
             highlight = read.segmentation.flood(img[ypos-30:ypos+30,:,2], (30, xcenter), tolerance=10)
@@ -990,34 +1056,7 @@ def enterCylinder(gui, boardData, board):
                 xpos = np.max(np.argwhere(highlight[30,:])) + 20
             else:
                 xpos = np.min(np.argwhere(highlight[30,:])) - 20
-            gui.moveBy(xcenter - xpos + dx*xmove, 0)
-            
-            vert_centers = read.find_centers(img[:,:,2] > 180, 0, boardData)#240
-            currix = np.argmin(np.abs(vert_centers-xcenter))
-            currx = vert_centers[currix]
-            print("\nTracking center")
-            while currix + dx < 0 or currix + dx >= len(vert_centers):
-                img = get_screenshot()[boardData.region[1]:boardData.region[3],boardData.region[0]:boardData.region[2]]
-                vert_centers = read.find_centers(img[:,:,2] > 180, 0, boardData)#240
-                currix = np.argmin(np.abs(vert_centers-currx))
-                currx = vert_centers[currix]
-                print(currx, end=" ")
-            
-            nextx = vert_centers[currix + dx]
-            print("\nTracking next")
-            while abs(nextx - xcenter) > 5:
-                img = get_screenshot()[boardData.region[1]:boardData.region[3],boardData.region[0]:boardData.region[2]]
-                vert_centers = read.find_centers(img[:,:,2] > 180, 0, boardData)#240
-                nextx = vert_centers[np.argmin(np.abs(vert_centers-nextx))]
-                print(nextx, end=" ")
-            print("\n")
-            
-            highlight = read.segmentation.flood(img[ypos-30:ypos+30,:,2], (30, xcenter), tolerance=10)
-            if dx == 1:
-                xpos = np.max(np.argwhere(highlight[30,:])) + 20
-            else:
-                xpos = np.min(np.argwhere(highlight[30,:])) - 20
-            gui.moveBy(nextx - xpos, 0)
+            gui.moveBy(xcenter - xpos, 0)
         #time.sleep(1)
         on = on.to
     
@@ -1033,28 +1072,15 @@ def enterCylinder(gui, boardData, board):
     guilib.keyDown('w')
     time.sleep(0.05)
     if on.x == 0 or on.x == 5:
-        time.sleep(0.35)
+        time.sleep(0.45)
     if on.x == 5:
-        time.sleep(0.15)
+        time.sleep(0.18)
     return on.x
 
 def main():
     escape = cv.imread('images/escape.png')
     music = cv.imread('images/record.png')
     music2 = cv.imread('images/recordc.png')
-    returnImg = cv.imread('images/return.png')
-        
-    #############################
-# =============================================================================
-#     xes = [85, 0, 0, 0, 0, 0]
-#     ys = [290, 380, 475, 560, 645, 730, 810]
-#     import board, elements
-#     elts = [elements.Triangle(3, 3, 3)]
-#     b = board.Board(xes, ys, elts, [(0, 6)], [(0, 0)], cylinder=True)
-#     b.solve(True)
-#     print(b)
-# =============================================================================
-    #############################
     
     time.sleep(3)
     
@@ -1073,14 +1099,6 @@ def main():
     guilib.keyUp('shift')
     guilib.keyDown('shift')
     calibrate(gui)
-    
-# =============================================================================
-#     gui.startstop_solve()
-#     enterCylinder(gui, data.COLDRAW, b)
-# 
-#     guilib.keyUp('shift')
-#     raise Exception('NYI')
-# =============================================================================
     
     while True:
         # Look for the music box
@@ -1293,13 +1311,13 @@ def main():
         b.solve(True)
         print(b)
         
-        endx = enterCylinder(gui, data.COLDRAW, b)
+        endx = enterCylinder(gui, data.COLDRAW, b, 0)
         
         image = get_screenshot()
         image = (image[400:,:,0] < 30) & (image[400:,:,2] > 180)
         locs = np.argwhere(image)
         gui.moveTo(np.average(locs[:,1]) + 150)
-        time.sleep(1.3)
+        time.sleep(1.2)
         gui.moveBy(-1200, 0)
         if endx == 5:
             gui.moveBy(-400, 0)
@@ -1310,6 +1328,7 @@ def main():
         time.sleep(0.5)
         gui.startstop_solve()
         time.sleep(0.5)
+        #time.sleep(10)
         
         images = []
         for i in range(2):
@@ -1335,11 +1354,11 @@ def main():
         
         gui.moveTo(data.COLDRAW.region[0] + b.vertLines[0], b.horizLines[-1])
         
-        b.solve()
+        b.solve(True)
         print(b)
         
         gui.click()
-        enterCylinder(gui, data.COLDRAW, b)
+        enterCylinder(gui, data.COLDRAW, b, b.vertLines[0])
         
         time.sleep(0.3)
         gui.moveBy(500, 0)
@@ -1358,27 +1377,11 @@ def main():
         time.sleep(2.5)
         gui.moveBy(500, 0)
         time.sleep(1.5)
-        
-        guilib.keyUp('w')
-        guilib.keyDown('a')
-        time.sleep(2)
-        guilib.keyUp('a')
-        gui.moveBy(600, 0)
-        maxloc = findimage(returnImg)
-        gui.moveTo(maxloc[0] + 200)
-        guilib.keyDown('w')
-        time.sleep(0.8)
-        gui.moveBy(1350, 0)
+
         time.sleep(0.3)
-        gui.startstop_solve()
-        guilib.keyUp('w')
-        time.sleep(1)
+        gui.moveBy(-950, 0)
         
-        # Walk to the start from Ten
-        gui.startstop_solve()
-        gui.moveBy(-2700, 0)
-        guilib.keyDown('w')
-        time.sleep(1.2)
+        time.sleep(0.7)
         gui.moveBy(800, 0)
         time.sleep(0.4)
         gui.moveBy(1100, 0)
@@ -1390,7 +1393,7 @@ def main():
         gui.moveBy(-800, 0)
         time.sleep(1.1)
         gui.moveBy(600, 0)
-        time.sleep(2)
+        time.sleep(1.6)
         gui.moveBy(-300, 0)
         time.sleep(2)
         guilib.keyUp('w')

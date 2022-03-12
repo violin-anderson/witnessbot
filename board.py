@@ -56,14 +56,26 @@ def dfs(startnode, best, depth):
     
     if best[0] and depth > best[0]:
         return
+    
+    valid = startnode.edges
+    remeh = list(filter(lambda e: e.type == "edgehex" and not (e.c1.to == startnode or e.c2.to == startnode), startnode.elements))
+    if len(remeh) > 0:
+        if len(remeh) >= 2:
+            return
+        if len(remeh) == 1:
+            valid = [remeh[0].c1, remeh[0].c2]
+    elif startnode.friend:
+        remeh = list(filter(lambda e: e.type == "edgehex" and not (e.c1.to == startnode.friend or e.c2.to == startnode.friend), startnode.friend.elements))
+        if len(remeh) >= 2:
+            return
+        if len(remeh) == 1:
+            valid = [remeh[0].c1, remeh[0].c2]
 
     for i in range(len(startnode.edges)):
-        if not startnode.edges[i].to and (not startnode.friend or\
-            (startnode.edges[i] != startnode.friend.edges[i] and startnode != startnode.friend.edges[i])):
+        if (startnode.edges[i] in valid or (startnode.friend and startnode.friend.edges[i] in valid)) and\
+        not startnode.edges[i].to and (not startnode.friend or (startnode.edges[i] != startnode.friend.edges[i] and startnode != startnode.friend.edges[i])):
             startnode.to = startnode.edges[i]
             if startnode.friend:
-                #assert(not startnode.friend.edges[i].to)
-                #assert(len(startnode.friend.edges) == len(startnode.edges))
                 startnode.friend.to = startnode.friend.edges[i]
                 startnode.friend.alt = True
                 startnode.friend.to.alt = True
@@ -327,7 +339,7 @@ class Board():
         else:
             for y in range(self.height + 1):
                 for x in range(self.width + 1):
-                    for x2, y2 in [(x+1, y), (x, y-1), (x, y+1), (x-1, y)]:
+                    for x2, y2 in [(x+1, y), (x, y-1), (x, y+1), (x-1, y), ]:
                         if y2 >= 0 and y2 < len(cornermap) and x2 >= 0 and x2 < len(cornermap[0]):
                             cornermap[y][x].edges.append(cornermap[y2][x2])
             

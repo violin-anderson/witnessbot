@@ -269,7 +269,7 @@ def get_cell_objects(vert_centers, horiz_centers, frame, boardData):
             else:
                 tolerance = 16
                 if boardData.squares:
-                    tolerance = 25
+                    tolerance = 30
                 
                 if boardData.colorsquares:
                     important = square[:,:,2]

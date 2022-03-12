@@ -32,9 +32,9 @@ FOUR = boardData("four", (0, 0, 350, 275), (255, 20), 1.4, linethresh=0, edgeHex
 
 FSSE = boardData("fsse", (770, 350, 1145, 725), (695, 805), [2, 1.1, 1.7], stars=True, hexes=True)
 
-NINE = boardData("nine", (0, 0, 200, 200), (180, 20), [1.12, 1.12, 1.12], squares=True) 
+NINE = boardData("nine", (0, 0, 200, 200), (180, 20), [1.115, 1.115, 1.115], squares=True) 
 
-TEN = boardData("ten", (0, 0, 200, 200), (180, 20), [1.12, 1.12, 1.12], colorsquares=True) 
+TEN = boardData("ten", (0, 0, 200, 200), (180, 20), [1.115, 1.115, 1.115], colorsquares=True) 
 
 ELEVEN = boardData("eleven", (0, 0, 600, 600), (550, 50), 1.12, blurshape=(6,2), triangles=True)
 
