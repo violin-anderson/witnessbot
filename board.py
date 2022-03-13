@@ -50,7 +50,7 @@ class Cell():
                 neighbors.append(neighbor)
         return neighbors
 
-def dfs(startnode, best, depth):
+def dfs(startnode, best, depth, cylinder):
     if startnode.end:
         yield "Found"
     
@@ -79,7 +79,13 @@ def dfs(startnode, best, depth):
                 startnode.friend.to = startnode.friend.edges[i]
                 startnode.friend.alt = True
                 startnode.friend.to.alt = True
-            for sln in dfs(startnode.edges[i], best, depth+1):
+            newdepth = depth + 1
+            if cylinder:
+                if startnode.edges[i].x == startnode.x:
+                    newdepth = depth + 0.1
+                else:
+                    newdepth = depth + 1
+            for sln in dfs(startnode.edges[i], best, newdepth, cylinder):
                 yield sln
             if startnode.friend:
                 startnode.friend.to.alt = False
@@ -231,12 +237,18 @@ def validateGroups(groups, dims, cornermap):
     
     return True
 
-def getSlnLength(startnode):
+def getSlnLength(startnode, cylinder):
     ret = 0
     on = startnode
     while on.to:
+        if cylinder:
+            if on.x == on.to.x:
+                ret += 0.1
+            else:
+                ret += 1
+        else:
+            ret += 1
         on = on.to
-        ret += 1
     return ret
 
 class Board():
@@ -399,7 +411,7 @@ class Board():
         best = [0]
         for xs, ys in self.starts:
             startnode = cornermap[ys][xs]
-            for sln in dfs(startnode, best, 0):
+            for sln in dfs(startnode, best, 0, self.cylinder):
 # =============================================================================
 #                 sln = \
 # """._._. . ._.
@@ -417,7 +429,7 @@ class Board():
 #                     del self.cornermap
 # =============================================================================
                 groups = getGroups(flatCells)
-                length = getSlnLength(startnode)
+                length = getSlnLength(startnode, self.cylinder)
                 if not best[0] or length < best[0]:
                     if validateGroups(groups, (self.width, self.height), cornermap):
                         self.startnode = startnode

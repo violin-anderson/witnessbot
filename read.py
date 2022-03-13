@@ -371,9 +371,10 @@ def readBoard(image, boardData):
     
     if boardData.edgeHexes:
         sanitized, hexes = clean_hexes(frame, boardData)
-        linemap = get_linemap(sanitized, boardData)
     else:
-        linemap = get_linemap(frame, boardData)
+        sanitized = frame
+    
+    linemap = get_linemap(sanitized, boardData)
     
     horiz_centers = find_centers(linemap, 1, boardData)
     
@@ -384,6 +385,24 @@ def readBoard(image, boardData):
         print(vert_centers)
     if not horiz_centers.shape == vert_centers.shape:
         print(f"WARNING: Unequal shapes {horiz_centers.shape[0]} horizontal, {vert_centers.shape[0]} vertical")
+        if boardData.name == "fsse":
+            print("Attempting to use static color analysis")
+            linemap = frame[:,:,1] < 115
+            linemap[:15,:] = False
+            linemap[-15:,:] = False
+            linemap[:,:15] = False
+            linemap[:,-15:] = False
+            if DEBUG >= 2:
+                plt.imshow(linemap)
+                plt.show()
+            
+            horiz_centers = find_centers(linemap, 1, boardData)
+            vert_centers = find_centers(linemap, 0, boardData)
+            if DEBUG >= 1:
+                print(horiz_centers)
+                print(vert_centers)
+            if not horiz_centers.shape == vert_centers.shape:
+                print(f"WARNING: Still unequal shapes {horiz_centers.shape[0]} horizontal, {vert_centers.shape[0]} vertical")
     
     elts = []
     

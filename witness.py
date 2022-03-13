@@ -12,11 +12,12 @@ from matplotlib import pyplot as plt
 REGION = (0, 0, 1920, 1080) #Game window region
 FOURREGION = (600, 400, 700, 350)
 NINECREGION = (830, 380, 1080, 600)
-NINELREGION = (250, 410, 460, 610)
-NINERREGION = (1520, 290, 1730, 500)
+NINELREGION = (250, 410, 480, 610)
+NINERREGION = (1500, 290, 1730, 500)
 TENCREGION = (800, 485, 940, 615)
 TENLREGION = (255, 520, 420, 680)
 TENRREGION = (1320, 440, 1500, 610)
+ELEVENREGION = (100, 0, 1820, 1080)
 
 SENS = (1, 1)
 SENS3D = (1, 1)
@@ -698,9 +699,8 @@ def solveNine(gui):
         print("Trying left")
         # Make sure left is visible
         region = NINELREGION
-        waitForPuzzle(region[0]+20, region[1]+20, region[2]-20, region[3]-20)
-        # Make sure it's close to full brightness
-        #time.sleep(0.5)
+        waitForPuzzle(region[0]+50, region[1]+20, region[2]-50, region[3]-20)
+        
         image = get_screenshot()
         cv.imwrite("ninel.png", image)
         warped, warpfn = resize(image, *region)
@@ -710,7 +710,7 @@ def solveNine(gui):
         if not b.solve():
             print("Trying right")
             region = NINERREGION
-            waitForPuzzle(region[0]+20, region[1]+20, region[2]-20, region[3]-20)
+            waitForPuzzle(region[0]+50, region[1]+20, region[2]-50, region[3]-20)
             #time.sleep(0.5)
             image = get_screenshot()
             cv.imwrite("niner.png", image)
@@ -734,7 +734,7 @@ def solveNine(gui):
 def solveTen(gui):
     print("Trying center")
     region = TENCREGION
-    waitForPuzzle(region[0]+20, region[1]+20, region[2]-20, region[3]-20)
+    waitForPuzzle(region[0]+50, region[1]+20, region[2]-50, region[3]-20)
     image = get_screenshot()
     cv.imwrite("tenc.png", image)
     warped, warpfn = resize(image, *region)
@@ -744,7 +744,7 @@ def solveTen(gui):
     if not b.solve():
         print("Trying right")
         region = TENRREGION
-        waitForPuzzle(region[0]+20, region[1]+20, region[2]-20, region[3]-20)
+        waitForPuzzle(region[0]+50, region[1]+20, region[2]-50, region[3]-20)
         #time.sleep(0.2)
         image = get_screenshot()
         cv.imwrite("tenr.png", image)
@@ -756,7 +756,7 @@ def solveTen(gui):
             print("Trying left")
             # Make sure left is visible
             region = TENLREGION
-            waitForPuzzle(region[0]+20, region[1]+20, region[2]-20, region[3]-20)
+            waitForPuzzle(region[0]+50, region[1]+20, region[2]-50, region[3]-20)
             # Make sure it's close to full brightness
             #time.sleep(0.2)
             image = get_screenshot()
@@ -855,7 +855,7 @@ def waitForCross(movingLeft, current, gui):
         
         # Solve board
         gui.startstop_solve()
-        warped, warpfn = resize(img, 0, 0, 1920, 1080, eleven=True)
+        warped, warpfn = resize(img, *ELEVENREGION, eleven=True)
         b = read.readBoard(warped, data.ELEVEN)
         gui.clickedsens = data.ELEVEN.clickedsens
         assert(b.solve())
@@ -863,11 +863,11 @@ def waitForCross(movingLeft, current, gui):
         
         coords = b.getSlnCoords()
         
-        gui.moveTo(warpfn(coords[0])[0][0], warpfn(coords[0])[0][1])
+        gui.moveTo(ELEVENREGION[0] + warpfn(coords[0])[0][0], ELEVENREGION[1] + warpfn(coords[0])[0][1])
         gui.click()
         
         for c in coords[1:]:
-            gui.moveTo(warpfn(c)[0][0], warpfn(c)[0][1])
+            gui.moveTo(ELEVENREGION[0] + warpfn(c)[0][0], ELEVENREGION[1] + warpfn(c)[0][1])
         gui.click()
         
         gui.startstop_solve()
@@ -961,12 +961,13 @@ def doPuzzle(gui, board):
                 guilib.keyDown('a')
             movingLeft = not movingLeft
         
+        # To account for random lag spike that always happens at this time
         if puzzleCount == 2:
             if movingLeft:
                 guilib.keyUp('a')
             else:
                 guilib.keyUp('d')
-            time.sleep(0.5)
+            time.sleep(0.25)
             if movingLeft:
                 guilib.keyDown('a')
             else:
@@ -1032,7 +1033,7 @@ def enterCylinder(gui, boardData, board, start):
             currix = np.argmin(np.abs(vert_centers-xseed))
             currx = vert_centers[currix]
             print("\nTracking center")
-            while currix + dx < 0 or currix + dx >= len(vert_centers):
+            while currix + dx < 0 or currix + dx >= len(vert_centers) or abs(xcenter - currx) < 20:
                 img = get_screenshot()[boardData.region[1]:boardData.region[3],boardData.region[0]:boardData.region[2]]
                 vert_centers = read.find_centers(img[:,:,2] > 180, 0, boardData)
                 currix = np.argmin(np.abs(vert_centers-currx))
@@ -1070,17 +1071,18 @@ def enterCylinder(gui, boardData, board, start):
     gui.startstop_solve()
     gui.moveBy(866.7 * on.x + 600, 0)
     guilib.keyDown('w')
-    time.sleep(0.05)
+    time.sleep(0.15)
     if on.x == 0 or on.x == 5:
-        time.sleep(0.45)
+        time.sleep(0.35)
     if on.x == 5:
-        time.sleep(0.18)
+        time.sleep(0.13)
     return on.x
 
 def main():
     escape = cv.imread('images/escape.png')
     music = cv.imread('images/record.png')
     music2 = cv.imread('images/recordc.png')
+    returnImg = cv.imread('images/return.png')
     
     time.sleep(3)
     
@@ -1177,10 +1179,7 @@ def main():
         
         except Exception:
             traceback.print_exc()
-            #print("Pausing for 60 seconds, just for fun")
-            #time.sleep(60)
-            #print("Pausing for 10 more seconds")
-            #time.sleep(10)
+            time.sleep(2)
         
             if not gui.walking:
                 gui.startstop_solve()
@@ -1255,18 +1254,20 @@ def main():
         guilib.keyDown('w')
         if SLOW:
             time.sleep(0.3)
-        time.sleep(0.5)
+        time.sleep(0.6)
         gui.moveBy(1200, 0)
         image = get_screenshot()
         image = (image[:,:,0] < 30) & (image[:,:,2] > 180)
         locs = np.argwhere(image)
-        gui.moveTo(np.average(locs[:,1]))
-        time.sleep(0.25)
+        gui.moveTo(np.average(locs[:,1]) + 300)
+        time.sleep(0.6)#0.25
+        gui.moveBy(-1800, 0)
         guilib.keyUp('w')
         gui.startstop_solve()
+        time.sleep(0.3)
         gui.startstop_solve()
         gui.startstop_solve()
-        time.sleep(0.6)
+        time.sleep(0.3)
         image = get_screenshot()
         assert(np.any(image[:,:,2] > 180))
         gui.startstop_solve()
@@ -1290,28 +1291,19 @@ def main():
         img = get_screenshot()
         images.append(img)
         cv.imwrite(f"thirteen{i+1}.png", get_screenshot())
-        gui.moveBy(-800, 0)
-        guilib.keyDown('d')
-        time.sleep(0.55)
-        guilib.keyUp('d')
-        gui.moveBy(-800, 0)
         gui.startstop_solve()
         
         gui.schedule(0.3)
-        b = read.readCylinder([images[1], images[0], images[2]], data.THIRTEEN)
+        b = read.readCylinder([images[2], images[1], images[0]], data.THIRTEEN)
         gui.execute()
-        
-        frame = get_screenshot()[data.COLDRAW.region[1]:data.COLDRAW.region[3], data.COLDRAW.region[0]:data.COLDRAW.region[2]]
-        findline = read.segmentation.flood(frame[:,:,2], data.COLDRAW.startcoords, tolerance=35)
-        vert_centers = list(read.find_centers(findline, 0, data.COLDRAW))
-        
-        gui.moveTo(data.COLDRAW.region[0] + vert_centers[1], b.horizLines[-1])
-        gui.click()
         
         b.solve(True)
         print(b)
         
-        endx = enterCylinder(gui, data.COLDRAW, b, 0)
+        gui.moveTo(data.COLDRAW.region[0] + b.vertLines[0], b.horizLines[-1])
+        gui.click()
+        
+        endx = enterCylinder(gui, data.COLDRAW, b, b.vertLines[0])
         
         image = get_screenshot()
         image = (image[400:,:,0] < 30) & (image[400:,:,2] > 180)
@@ -1328,7 +1320,6 @@ def main():
         time.sleep(0.5)
         gui.startstop_solve()
         time.sleep(0.5)
-        #time.sleep(10)
         
         images = []
         for i in range(2):
@@ -1377,11 +1368,14 @@ def main():
         time.sleep(2.5)
         gui.moveBy(500, 0)
         time.sleep(1.5)
+        
+        maxloc = findimage(returnImg)
+        gui.moveTo(maxloc[0] + 115, maxloc[1])
 
         time.sleep(0.3)
         gui.moveBy(-950, 0)
         
-        time.sleep(0.7)
+        time.sleep(0.75)
         gui.moveBy(800, 0)
         time.sleep(0.4)
         gui.moveBy(1100, 0)
