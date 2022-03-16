@@ -434,7 +434,6 @@ def readCylinder(images, boardData):
     ends = []
     xes = [0] * 6
     centerVert = (boardData.region[2] - boardData.region[0]) / 2
-    centerPosGoal = -1
     for iimg, image in enumerate(images):
         frame = image[boardData.region[1]:boardData.region[3], boardData.region[0]:boardData.region[2]]
         
@@ -452,17 +451,22 @@ def readCylinder(images, boardData):
         
         centerPos = np.argmin(np.abs(np.array(vert_centers)-centerVert))
         centerVert = vert_centers[centerPos]
-        if centerPosGoal == -1:
-            centerPosGoal = centerPos
         
         for ix, x in enumerate(vert_centers):
             ix = (2*iimg + ix - centerPos)%6
             if not xes[ix]:
                 xes[ix] = x
             
-            y = int(math.sqrt((1 - ((x-90)**2) / (150**2)) * 115**2) + 460)
-            start = findline[y+10,x]
-            end = findline[y+20,x]
+            y = int(math.sqrt((1 - ((x-90)**2) / (150**2)) * 115**2) + 470)
+            start = findline[y,x]
+# =============================================================================
+#             for x in range(findline.shape[1]):
+#                 y = int(math.sqrt((1 - ((x-90)**2) / (150**2)) * 115**2) + 470)
+#                 findline[y,x] = not findline[y,x]
+# =============================================================================
+            
+            y = int(math.sqrt((1 - ((x-90)**2) / (150**2)) * 115**2) + 483)
+            end = findline[y,x]
             
             if start:
                 if end:
@@ -473,9 +477,11 @@ def readCylinder(images, boardData):
                 if not new in appendTo:
                     appendTo.append(new)
             
-            y = int(-1 * math.sqrt((1 - ((x-90)**2) / (150**2)) * 115**2) + 156)
-            start = findline[y-10,x]
-            end = findline[y-20,x]
+            y = int(-1 * math.sqrt((1 - ((x-90)**2) / (150**2)) * 115**2) + 147)
+            start = findline[y,x]
+            
+            y = int(-1 * math.sqrt((1 - ((x-90)**2) / (150**2)) * 115**2) + 130)
+            end = findline[y,x]
             
             if start:
                 if end:
@@ -535,7 +541,7 @@ def readCylinder(images, boardData):
             for iy in range(7):
                 for ix in range(len(vert_centers) - 1):
                     linex = (2*iimg + ix - 1)%6
-                    value = np.min(frame[CYLHORIZ[iy],vert_centers[ix]:vert_centers[ix+1],2])
+                    value = np.min(frame[CYLHORIZ[iy]-5:CYLHORIZ[iy]+5,vert_centers[ix]:vert_centers[ix+1],2])
                     if DEBUG >= 3:
                         print(f"hex@{ix}:,{iy}: {value}")
                     if value < 75:
