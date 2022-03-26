@@ -22,9 +22,9 @@ A bot made to speedrun The Challenge in the game The Witness
 4. Launch The Witness. It should be running at 1920x1080 natively on a screen of the same resolution. If you have multiple screens, make note of which it is on.
 5. From a command line, run the command `python`, then run `import mss; from matplotlib import pyplot; import numpy; sct=mss.mss(); pyplot.imshow(numpy.array(sct.grab(sct.monitors[1]))[:,:,:3]); plt.show()`
 6. A window should appear which shows a screenshot of one of your monitors. If the monitor shown is the monitor The Witness was running on, you're all set
- * If the correct monitor did not appear you will need to figure out which monitor The Witness is running on
- * If you do not know, try running the following command, replacing 1 with 2, 3, etc. `pyplot.imshow(numpy.array(sct.grab(sct.monitors[1]))[:,:,:3]); plt.show()`
- * Once you determine the correct monitor, edit the file witness.py and find the line `MONITOR = 1` (approx line 23). Replace the number 1 with the proper number
+   * If the correct monitor did not appear you will need to figure out which monitor The Witness is running on
+   * If you do not know, try running the following command, replacing 1 with 2, 3, etc. `pyplot.imshow(numpy.array(sct.grab(sct.monitors[1]))[:,:,:3]); plt.show()`
+   * Once you determine the correct monitor, edit the file witness.py and find the line `MONITOR = 1` (approx line 23). Replace the number 1 with the proper number
 
 ### Run
 1. Ensure that there is nothing on top of The Witness's window (No screen recording software, timers, etc. These will confuse the bot.)
