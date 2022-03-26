@@ -356,7 +356,7 @@ def navigateFSSE(current, solved, gui):
         gui.moveBy(800, 0)
         time.sleep(0.4)
         gui.moveBy(1500, 0)
-        time.sleep(0.2)
+        time.sleep(0.3)
         guilib.keyUp('w')
         gui.startstop_solve()
         return 'behind'
@@ -1396,9 +1396,10 @@ def main():
             gui.moveBy(-400, 0)
         gui.startstop_solve()
         guilib.keyUp('w')
+        time.sleep(0.3)
         gui.startstop_solve()
         gui.startstop_solve()
-        time.sleep(0.5)
+        time.sleep(0.3)
         gui.startstop_solve()
         time.sleep(0.5)
         
@@ -1437,8 +1438,10 @@ def main():
         time.sleep(0.2)
         guilib.keyUp('w')
         gui.moveBy(-1750, -300)
+        guilib.keyUp('shift')
         time.sleep(5)
         guilib.press('r')
+        guilib.keyDown('shift')
         
         guilib.keyDown('w')
         gui.moveBy(2600, 300)
