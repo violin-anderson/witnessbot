@@ -204,7 +204,7 @@ def detectPuzzle(x, y, x2, y2, easy = False, image = None):
     if easy:
         image = (image[:,:,1] > 80) & (image[:,:,2] < 70)
     else:
-        image = (image[:,:,1] > 120) & (image[:,:,2] < 100)
+        image = (image[:,:,1] > 140) & (image[:,:,2] < 100)
     if DEBUG == 3:
         plt.imshow(image)
         plt.show()
@@ -1075,7 +1075,7 @@ def enterCylinder(gui, boardData, board, start):
             correct = True
             if start:
                 startOffset = xcenter - start
-                if abs(startOffset) > xmove and (startOffset < 0) == (dx > 0):
+                if abs(startOffset) > xmove - 20 and ((startOffset < 0) == (dx > 0)):
                     time.sleep(0.3)
                     gui.moveBy(dx * 20, 0)
                     correct = False

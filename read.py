@@ -281,7 +281,7 @@ def get_cell_objects(vert_centers, horiz_centers, frame, boardData):
                     important = segmentation.flood_fill(important, (important.shape[0]//2, important.shape[1]//2), 0, tolerance=1)
                 
                 # Shade out edges
-                delta = important.shape[0]//8
+                delta = important.shape[0]//7
                 for start in [(delta, delta), (important.shape[0]-delta, delta), (delta, important.shape[1]-delta), (important.shape[0]-delta, important.shape[1]-delta)]:
                     important = segmentation.flood_fill(important, start, 255, tolerance=tolerance)
                 important = (important == 255) * 255
